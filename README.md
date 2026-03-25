@@ -1,16 +1,59 @@
-# React + Vite
+# Sistema de Préstamos con Motor de Sanciones (SGE)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación frontend en React (Vite) con una base de datos local simulada usando `json-server`.
 
-Currently, two official plugins are available:
+## Requisitos previos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 18 o superior
+- npm (incluido con Node.js)
+- Git
 
-## React Compiler
+## 1) Clonar el repositorio
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd SISTEMA-DE-PR-STAMOS-CON-MOTOR-DE-SANCIONES-SGE-
+```
 
-## Expanding the ESLint configuration
+## 2) Instalar dependencias
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+```
+
+## 3) Levantar la base de datos local (json-server)
+
+En una terminal nueva, entra primero a la carpeta `data`:
+
+```bash
+cd data
+npx json-server --watch db.json --port 5000
+```
+
+La API quedará disponible en:
+
+- `http://localhost:5000/catalogo`
+- `http://localhost:5000/inventario`
+- `http://localhost:5000/prestamos`
+- `http://localhost:5000/sanciones`
+
+## 4) Encender React (frontend)
+
+En otra terminal (sin cerrar la de `json-server`):
+
+```bash
+npm run dev
+```
+
+Luego abre la URL que muestre Vite en consola (normalmente `http://localhost:5173`).
+
+## Flujo recomendado de ejecución
+
+1. Terminal 1: `cd data` y luego `npx json-server --watch db.json --port 5000`
+2. Terminal 2: `npm run dev`
+
+## Solución rápida de problemas
+
+- Si el frontend no carga datos, verifica que `json-server` esté corriendo en el puerto `5000`.
+- Si `npm run dev` falla por scripts faltantes, revisa que el archivo `package.json` sea el correcto del proyecto React/Vite.
+- Si el puerto `5000` o `5173` está ocupado, cierra el proceso que lo usa o cambia el puerto.
