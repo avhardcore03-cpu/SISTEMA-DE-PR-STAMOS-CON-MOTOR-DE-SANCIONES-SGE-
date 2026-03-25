@@ -56,7 +56,6 @@ const Catalogo = () => {
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
             Catálogo de Equipos
           </h1>
-          <p className="text-gray-500 text-sm">Bienvenido, marian.cabana</p>
         </div>
         <div className="text-right">
           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
