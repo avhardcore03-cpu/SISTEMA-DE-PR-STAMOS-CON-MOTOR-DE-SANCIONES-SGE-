@@ -1,88 +1,170 @@
+import React, { useState, useEffect } from "react";
+
 const Catalogo = () => {
+  const [equipos, setEquipos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [filtroActivo, setFiltroActivo] = useState("Todos");
+  const [busqueda, setBusqueda] = useState("");
+
+  const normalizarTexto = (valor) =>
+    String(valor ?? "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+  // 1. Cargar datos desde el json-server
+  useEffect(() => {
+    fetch("http://localhost:5000/catalogo")
+      .then((res) => res.json())
+      .then((data) => {
+        setEquipos(data);
+        setCargando(false);
+      })
+      .catch((err) => {
+        console.error("Error al cargar el JSON:", err);
+        setCargando(false);
+      });
+  }, []);
+
+  const categorias = [
+    "Todos",
+    "Computadoras",
+    "Audio/Video",
+    "Tablets",
+    "Fotografía",
+  ];
+
+  // 2. Lógica de Filtrado (Afecta a todos los elementos del array)
+  const busquedaNormalizada = normalizarTexto(busqueda);
+  const equiposFiltrados = equipos.filter((equipo) => {
+    const coincideCategoria =
+      filtroActivo === "Todos" ||
+      normalizarTexto(equipo.tipo) === normalizarTexto(filtroActivo);
+    const coincideBusqueda =
+      normalizarTexto(equipo.nombre).includes(busquedaNormalizada) ||
+      normalizarTexto(equipo.id).includes(busquedaNormalizada) ||
+      normalizarTexto(equipo.tipo).includes(busquedaNormalizada);
+    return coincideCategoria && coincideBusqueda;
+  });
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
-      {/* HEADER: Título y Contador */}
-      <div className="flex justify-between items-start mb-8">
+      {/* Encabezado */}
+      <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
             Catálogo de Equipos
           </h1>
-          <p className="text-gray-400 text-sm font-medium">
-            Bienvenido, marian.cabana
-          </p>
+          <p className="text-gray-500 text-sm">Bienvenido, marian.cabana</p>
         </div>
-
         <div className="text-right">
           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
             Equipos Disponibles
           </p>
-          <p className="text-4xl font-black text-[#4ade80]">0</p>
+          <p className="text-4xl font-black text-[#008c72]">
+            {equipos.filter((e) => e.estado === "Disponible").length}
+          </p>
         </div>
       </div>
 
-      {/* BARRA DE BÚSQUEDA */}
-      <div className="flex gap-4 mb-10">
-        <div className="relative flex-1">
-          <span className="absolute left-4 top-3 text-gray-300">🔍</span>
+      {/* Buscador y Botones de Filtro */}
+      <div className="flex flex-wrap items-center gap-4 mb-8">
+        <div className="relative flex-1 min-w-[300px]">
+          <span className="absolute left-4 top-2.5 text-gray-400">🔍</span>
           <input
             type="text"
-            placeholder="Buscar equipos..."
-            className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008c72]/20"
+            placeholder="Buscar por nombre o ID..."
+            className="w-full pl-11 pr-4 py-2 rounded-lg border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008c72]/20"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
-        <button className="px-6 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-500 shadow-sm hover:bg-gray-50 transition-all">
-          Filtrar
-        </button>
+
+        <div className="flex gap-2">
+          {categorias.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setFiltroActivo(cat)}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${
+                filtroActivo === cat
+                  ? "bg-[#008c72] text-white border-[#008c72]"
+                  : "bg-white text-gray-400 border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* GRID DE TARJETAS (Vacío/Estructural) */}
+      {/* Grid Dinámico (Aquí es donde ocurre la magia) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {/* EJEMPLO DE UNA TARJETA (Para ver el diseño) */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative group">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center gap-4">
-              {/* Icono del equipo */}
-              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 text-gray-400">
-                {/* Aquí iría el icono */}
-                <div className="w-6 h-6 bg-gray-200 rounded-md animate-pulse" />
+        {cargando ? (
+          <p className="col-span-3 text-center py-20 text-gray-400 animate-pulse">
+            Cargando equipos...
+          </p>
+        ) : equiposFiltrados.length > 0 ? (
+          // SOLO ESTE .MAP RENDERIZA LAS TARJETAS. No hay nada manual arriba.
+          equiposFiltrados.map((equipo, index) => (
+            <div
+              key={`${equipo.id}-${index}`}
+              className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-all group"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl border border-gray-100 group-hover:scale-105 transition-transform">
+                    {equipo.icono}
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-1">
+                      {equipo.id}
+                    </p>
+                    <p className="text-[11px] text-gray-400 font-bold leading-none">
+                      {equipo.tipo}
+                    </p>
+                  </div>
+                </div>
+
+                <span
+                  className={`px-3 py-1 rounded-full text-[9px] font-black border uppercase tracking-tighter ${
+                    equipo.estado === "Disponible"
+                      ? "bg-green-100 text-green-600 border-green-200"
+                      : equipo.estado === "En Mantenimiento"
+                        ? "bg-gray-100 text-gray-500 border-gray-200"
+                        : "bg-orange-100 text-orange-600 border-orange-200"
+                  }`}
+                >
+                  {equipo.estado}
+                </span>
               </div>
-              <div>
-                <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest leading-none mb-1">
-                  CÓDIGO
-                </p>
-                <p className="text-[11px] text-gray-400 font-medium leading-none">
-                  Categoría
+
+              <h3 className="text-lg font-extrabold text-slate-700 mb-2">
+                {equipo.nombre}
+              </h3>
+              <p className="text-[11px] text-gray-400 mb-6 leading-relaxed line-clamp-2 italic">
+                {equipo.descripcion}
+              </p>
+
+              <div className="flex items-center gap-2 pt-4 border-t border-gray-50">
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${equipo.estado === "Disponible" ? "bg-green-400" : "bg-orange-400"}`}
+                />
+                <p className="text-[11px] text-gray-400 font-bold italic">
+                  {equipo.estado === "Disponible"
+                    ? "Disponible para préstamo"
+                    : "No disponible actualmente"}
                 </p>
               </div>
             </div>
-
-            {/* Badge de Estado */}
-            <span className="px-3 py-1 rounded-full text-[9px] font-black tracking-tighter bg-green-100 text-green-600 border border-green-200 uppercase">
-              Disponible
-            </span>
-          </div>
-
-          <div className="mb-6">
-            <h3 className="text-lg font-extrabold text-slate-700">
-              Nombre del Equipo
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-2 pt-4 border-t border-gray-50">
-            <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-            <p className="text-[11px] text-gray-400 font-bold italic">
-              Disponible para préstamo
+          ))
+        ) : (
+          <div className="col-span-3 text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
+            <p className="text-gray-400 font-medium italic">
+              No se encontraron resultados para esta búsqueda.
             </p>
           </div>
-        </div>
-        {/* FIN DE TARJETA DE EJEMPLO */}
-      </div>
-
-      {/* MENSAJE DE ESPERA (Opcional) */}
-      <div className="mt-20 text-center">
-        <p className="text-gray-300 text-sm italic font-medium">
-          No hay equipos cargados en el catálogo...
-        </p>
+        )}
       </div>
     </div>
   );
