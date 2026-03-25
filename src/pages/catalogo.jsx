@@ -70,7 +70,7 @@ const Catalogo = () => {
 
       {/* Buscador y Botones de Filtro */}
       <div className="flex flex-wrap items-center gap-4 mb-8">
-        <div className="relative flex-1 min-w-[300px]">
+        <div className="relative flex-1 min-w-75">
           <span className="absolute left-4 top-2.5 text-gray-400">🔍</span>
           <input
             type="text"
@@ -109,7 +109,7 @@ const Catalogo = () => {
           equiposFiltrados.map((equipo, index) => (
             <div
               key={`${equipo.id}-${index}`}
-              className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-all group"
+              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group"
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="flex gap-4">
