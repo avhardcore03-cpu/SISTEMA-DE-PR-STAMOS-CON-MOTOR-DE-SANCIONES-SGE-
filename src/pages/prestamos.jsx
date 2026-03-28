@@ -7,72 +7,35 @@ export default function Prestamos() {
   const [usuario, setUsuario] = useState("");
   const [cantidad, setCantidad] = useState("");
 
-  // 🔥 CARGAR PRÉSTAMOS
+  // 🔥 CARGAR DESDE BACKEND
   useEffect(() => {
-    const guardados = localStorage.getItem("prestamos");
-
-    if (guardados) {
-      setPrestamos(JSON.parse(guardados));
-    } else {
-      const ejemplo = [
-        { id: 1, producto: "Laptop", usuario: "Juan", cantidad: 1 }
-      ];
-
-      setPrestamos(ejemplo);
-      localStorage.setItem("prestamos", JSON.stringify(ejemplo));
-    }
+    fetch("http://localhost:3001/prestamos")
+      .then(res => res.json())
+      .then(data => setPrestamos(data))
+      .catch(err => console.error("Error:", err));
   }, []);
-
-  // 🔥 GUARDAR
-  useEffect(() => {
-    localStorage.setItem("prestamos", JSON.stringify(prestamos));
-  }, [prestamos]);
 
   const agregarPrestamo = () => {
     if (!producto || !usuario || !cantidad) return;
 
-    const inventario = JSON.parse(localStorage.getItem("inventario")) || [];
-
-    const item = inventario.find(i => i.nombre === producto);
-
-    if (!item) {
-      alert("Producto no existe en inventario");
-      return;
-    }
-
-    if (item.cantidad < Number(cantidad)) {
-      alert("No hay suficiente stock");
-      return;
-    }
-
-    // 🔥 RESTAR INVENTARIO
-    
-let cantidadRestante = 0;
-
-const actualizado = inventario.map(i => {
-  if (i.nombre === producto) {
-    cantidadRestante = i.cantidad - Number(cantidad);
-
-    return {
-      ...i,
-      cantidad: cantidadRestante
-    };
-  }
-  return i;
-});
-
-    localStorage.setItem("inventario", JSON.stringify(actualizado));
-
-    // 🔥 CREAR PRÉSTAMO
     const nuevo = {
-  id: Date.now(),
-  producto,
-  usuario,
-  cantidad: Number(cantidad),
-  restante: cantidadRestante
-};
+      id: Date.now(),
+      producto,
+      usuario,
+      cantidad: Number(cantidad)
+    };
 
+    // 🔥 ACTUALIZA FRONT
     setPrestamos([...prestamos, nuevo]);
+
+    // 🔥 ENVÍA AL BACKEND
+    fetch("http://localhost:3001/prestamos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(nuevo)
+    });
 
     setProducto("");
     setUsuario("");
@@ -80,7 +43,8 @@ const actualizado = inventario.map(i => {
   };
 
   const eliminarPrestamo = (id) => {
-    setPrestamos(prestamos.filter(p => p.id !== id));
+    const nuevos = prestamos.filter(p => p.id !== id);
+    setPrestamos(nuevos);
   };
 
   return (
@@ -134,11 +98,7 @@ const actualizado = inventario.map(i => {
               <p>Usuario: {p.usuario}</p>
               <p>Cantidad: {p.cantidad}</p>
             </div>
-            
-            <p className="text-green-600">
-             Quedan: {p.restante}
-            </p>
-            
+
             <button
               onClick={() => eliminarPrestamo(p.id)}
               className="bg-red-500 text-white px-3 py-1 rounded"

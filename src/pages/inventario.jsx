@@ -6,29 +6,20 @@ export default function Inventario() {
   const [nombre, setNombre] = useState("");
   const [cantidad, setCantidad] = useState("");
 
-  // 🔥 CARGAR INVENTARIO
+  // 🔥 FUNCIÓN PARA CARGAR INVENTARIO
+  const cargarInventario = () => {
+    fetch("http://localhost:3001/inventario")
+      .then(res => res.json())
+      .then(data => setItems(data))
+      .catch(err => console.error("Error:", err));
+  };
+
+  // 🔥 CARGAR AL INICIO
   useEffect(() => {
-    const guardados = localStorage.getItem("inventario");
-
-    if (guardados) {
-      setItems(JSON.parse(guardados));
-    } else {
-      const data = [
-        { id: 1, nombre: "Laptop", cantidad: 5 },
-        { id: 2, nombre: "Mouse", cantidad: 10 }
-      ];
-
-      setItems(data);
-      localStorage.setItem("inventario", JSON.stringify(data));
-    }
+    cargarInventario();
   }, []);
 
-  // 🔥 GUARDAR
-  useEffect(() => {
-    localStorage.setItem("inventario", JSON.stringify(items));
-  }, [items]);
-
-  const agregarProducto = () => {
+  const agregarProducto = async () => {
     if (!nombre || !cantidad) return;
 
     const nuevo = {
@@ -37,13 +28,36 @@ export default function Inventario() {
       cantidad: Number(cantidad)
     };
 
-    setItems([...items, nuevo]);
+    // 🔥 ENVIAR AL BACKEND
+    await fetch("http://localhost:3001/inventario", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(nuevo)
+    });
+
+    // 🔥 RECARGAR DESDE BACKEND
+    cargarInventario();
+
     setNombre("");
     setCantidad("");
   };
 
-  const eliminarProducto = (id) => {
-    setItems(items.filter(item => item.id !== id));
+  const eliminarProducto = async (id) => {
+    const nuevos = items.filter(item => item.id !== id);
+
+    // 🔥 ACTUALIZAR BACKEND
+    await fetch("http://localhost:3001/inventario", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(nuevos)
+    });
+
+    // 🔥 RECARGAR
+    cargarInventario();
   };
 
   return (

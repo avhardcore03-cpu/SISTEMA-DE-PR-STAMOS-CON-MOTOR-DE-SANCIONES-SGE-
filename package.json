@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1",
@@ -28,5 +30,18 @@
     "globals": "^17.4.0",
     "json-server": "^1.0.0-beta.15",
     "vite": "^8.0.0"
-  }
+  },
+  "description": "Aplicación frontend en React (Vite) con una base de datos local simulada usando `json-server`.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avhardcore03-cpu/SISTEMA-DE-PR-STAMOS-CON-MOTOR-DE-SANCIONES-SGE-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/avhardcore03-cpu/SISTEMA-DE-PR-STAMOS-CON-MOTOR-DE-SANCIONES-SGE-/issues"
+  },
+  "homepage": "https://github.com/avhardcore03-cpu/SISTEMA-DE-PR-STAMOS-CON-MOTOR-DE-SANCIONES-SGE-#readme"
 }
