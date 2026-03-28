@@ -1,6 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import Sidebar from "./components/sidebar";
-import Login from "./pages/Login";
+import Login from "./pages/login";
 import Inventario from "./pages/inventario";
 import Prestamos from "./pages/prestamos";
 import Sanciones from "./pages/sanciones";
