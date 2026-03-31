@@ -1,5 +1,4 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import Sidebar from "./components/sidebar";
 
 // ===== IMPORTACIÓN DE PÁGINAS (Corregidas para evitar errores de ruta) =====
@@ -11,26 +10,10 @@ import Catalogo from "./pages/catalogo";
 
 function App() {
   const location = useLocation();
-  const [user, setUser] = useState(null); // Guardamos el objeto usuario completo
-  const [cargando, setCargando] = useState(true);
-
-  useEffect(() => {
-    // 1. Extraemos los datos del almacenamiento local
-    const savedUser = JSON.parse(
-      localStorage.getItem("user") || localStorage.getItem("usuario") || "null",
-    );
-    const token = localStorage.getItem("authToken");
-
-    if (savedUser) {
-      setUser(savedUser);
-    } else if (token) {
-      // Si hay token pero no hay usuario persistido, evitamos asumir rol ADMIN.
-      setUser(null);
-    } else {
-      setUser(null);
-    }
-    setCargando(false);
-  }, [location]);
+  // Leemos la sesión de forma síncrona para evitar el rebote al login tras navigate.
+  const user = JSON.parse(
+    localStorage.getItem("user") || localStorage.getItem("usuario") || "null",
+  );
 
   // Lógica de permisos y bloqueos
   const rol = user?.role;
@@ -38,14 +21,8 @@ function App() {
 
   // No mostrar el Sidebar en Login o si no hay sesión
   const mostrarSidebar = location.pathname !== "/" && user !== null;
-  const margenIzquierdo = mostrarSidebar ? "pl-64" : "";
-
-  if (cargando)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Cargando sistema...
-      </div>
-    );
+  // Solo aplicar margen si hay sidebar Y el usuario NO es estudiante
+  const margenIzquierdo = mostrarSidebar && !esEstudiante ? "pl-64" : "";
 
   return (
     <div className="flex">
