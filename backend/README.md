@@ -66,7 +66,7 @@ npm install
 El archivo `.env` ya contiene configuraciones por defecto:
 
 ```env
-PORT=5000
+PORT=3001
 NODE_ENV=development
 JWT_SECRET=tu_clave_secreta_super_segura_aqui_cambiar_en_produccion
 JWT_EXPIRE=7d
@@ -83,7 +83,7 @@ npm run dev
 npm start
 ```
 
-El servidor se iniciará en `http://localhost:5000`
+El servidor se iniciará en `http://localhost:3001`
 
 ## 🔐 Autenticación - Endpoints
 

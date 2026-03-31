@@ -191,7 +191,7 @@ const [estadoUsuario, setEstadoUsuario] = useState("ACTIVO");
 // En useEffect al cargar:
 const cargarEstadoUsuario = async () => {
   try {
-    const response = await fetch(`http://localhost:5000/api/usuarios/${payload.id}`);
+    const response = await fetch(`http://localhost:3001/api/usuarios/${payload.id}`);
     if (response.ok) {
       const data = await response.json();
       setEstadoUsuario(data.estado || "ACTIVO");

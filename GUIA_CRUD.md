@@ -147,10 +147,10 @@ import { sancionesService } from "../services/apiService";
 
 ```bash
 cd data
-npx json-server --watch db.json --port 5000
+npx json-server --watch db.json --port 3001
 ```
 
-Verifica en: `http://localhost:5000/catalogo`
+Verifica en: `http://localhost:3001/catalogo`
 
 ---
 

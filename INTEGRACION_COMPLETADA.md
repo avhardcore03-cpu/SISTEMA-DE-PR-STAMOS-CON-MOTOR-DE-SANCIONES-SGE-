@@ -230,8 +230,8 @@ Ejemplo:
 
 Si algo no funciona:
 1. Verifica que el servidor Express esté corriendo: `npm run dev`
-2. Comprueba que los puertos estén correctos (5000 para backend, 5173 para Vite)
+2. Comprueba que los puertos estén correctos (3001 para backend, 5173 para Vite)
 3. Abre DevTools del navegador → Console para ver errores
-4. Verifica la respuesta del endpoint: Abre `http://localhost:5000/api/catalogo`
+4. Verifica la respuesta del endpoint: Abre `http://localhost:3001/api/catalogo`
 
 **¡Listo para usar! 🎉**

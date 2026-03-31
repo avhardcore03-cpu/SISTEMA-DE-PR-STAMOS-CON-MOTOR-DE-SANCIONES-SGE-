@@ -70,7 +70,7 @@ SISTEMA-DE-PR-STAMOS-CON-MOTOR-DE-SANCIONES-SGE-/
     │   └── Scripts: start, dev
     │
     ├── .env
-    │   ├── PORT=5000
+    │   ├── PORT=3001
     │   ├── JWT_SECRET=...
     │   └── FRONTEND_URL=http://localhost:5173
     │
@@ -184,7 +184,7 @@ npm start
 
 ### 4. Verificar que funcione
 ```bash
-Abre: http://localhost:5000
+Abre: http://localhost:3001
 Deberías ver un JSON de bienvenida
 ```
 
@@ -194,7 +194,7 @@ Deberías ver un JSON de bienvenida
 
 ### 1. Login
 ```bash
-POST http://localhost:5000/api/auth/login
+POST http://localhost:3001/api/auth/login
 Body: {
   "email": "juan@example.com",
   "password": "password123"
@@ -203,7 +203,7 @@ Body: {
 
 ### 2. Devolver Equipo (SIN RETRASO)
 ```bash
-POST http://localhost:5000/api/prestamos/devolver
+POST http://localhost:3001/api/prestamos/devolver
 Headers: Authorization: Bearer {TOKEN}
 Body: {
   "id_prestamo": 101,
@@ -213,7 +213,7 @@ Body: {
 
 ### 3. Devolver Equipo (CON RETRASO)
 ```bash
-POST http://localhost:5000/api/prestamos/devolver
+POST http://localhost:3001/api/prestamos/devolver
 Headers: Authorization: Bearer {TOKEN}
 Body: {
   "id_prestamo": 102,
@@ -267,7 +267,7 @@ JWT_SECRET=tu_clave_secreta_mas_segura_aqui_cambiar_en_produccion
 FRONTEND_URL=http://localhost:PUERTO
 
 # Puerto del servidor
-PORT=5000
+PORT=3001
 ```
 
 ---

@@ -197,7 +197,7 @@ Verificar que `/sanciones` obtiene datos reales del endpoint `/api/sanciones/das
 
 ### 🔬 Test de API Directa
 ```bash
-curl http://localhost:5000/api/sanciones/dashboard
+curl http://localhost:3001/api/sanciones/dashboard
 ```
 
 **Respuesta esperada:**
@@ -445,7 +445,7 @@ Abril:
 ### "El botón 'Asignar Strike' está gris pero el préstamo está vencido"
 ```javascript
 // En consola del navegador:
-fetch('http://localhost:5000/api/prestamos')
+fetch('http://localhost:3001/api/prestamos')
   .then(r => r.json())
   .then(d => {
     d.prestamos.forEach(p => {

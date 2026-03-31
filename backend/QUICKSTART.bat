@@ -48,7 +48,7 @@ echo   npm start        ^→ Modo producción
 echo.
 echo RECOMENDADO: npm run dev
 echo.
-echo El servidor se ejecutará en: http://localhost:5000
+echo El servidor se ejecutará en: http://localhost:3001
 echo 📚 Lee README.md para más detalles y ejemplos
 echo.
 pause

@@ -141,9 +141,9 @@ prestamosDB.find(p => p.id_usuario === usuarioId && p.estado === 'PENDIENTE')
 ### Verificar Base Datos
 ```javascript
 // Console DevTools
-fetch('http://localhost:5000/api/catalogo').then(r=>r.json()).then(d=>console.log(d))
-fetch('http://localhost:5000/api/sanciones').then(r=>r.json()).then(d=>console.log(d))
-fetch('http://localhost:5000/api/usuarios/4').then(r=>r.json()).then(d=>console.log(d))
+fetch('http://localhost:3001/api/catalogo').then(r=>r.json()).then(d=>console.log(d))
+fetch('http://localhost:3001/api/sanciones').then(r=>r.json()).then(d=>console.log(d))
+fetch('http://localhost:3001/api/usuarios/4').then(r=>r.json()).then(d=>console.log(d))
 ```
 
 ### Test Login
@@ -167,7 +167,7 @@ Esperado: ✅ Desaparece de tabla
 
 | Problema | Solución |
 |----------|----------|
-| Red Error | Backend no corre, verifica puerto 5000 |
+| Red Error | Backend no corre, verifica puerto 3001 |
 | 404 /usuarios/:id | Verifica authRoutes.js tiene ruta |
 | equipoRetenido es null | Verifica prestamosDB tiene nombre_equipo |
 | Botón no se deshabilita | Verifica que fetch a /usuarios/:id funciona |

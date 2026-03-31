@@ -58,7 +58,7 @@ Esperado: Verás algo como:
   ║      Backend iniciado correctamente             ║
   ╚══════════════════════════════════════════════════╝
 
-  🚀 Servidor ejecutándose en: http://localhost:5000
+  🚀 Servidor ejecutándose en: http://localhost:3001
 
 ✅ ¡Listo! El servidor está corriendo
 
@@ -68,7 +68,7 @@ Esperado: Verás algo como:
 
 OPCIÓN A: En el navegador
 ────────────────────────────────────────────────────
-Abre: http://localhost:5000
+Abre: http://localhost:3001
 
 Deberías ver un JSON de bienvenida con todos los endpoints
 
@@ -77,7 +77,7 @@ OPCIÓN B: Con Postman (Recomendado para pruebas)
 1. Descarga Postman: https://www.postman.com/downloads/
 2. Crea nueva request
 3. POST (seleccionar método)
-4. URL: http://localhost:5000/api/auth/login
+4. URL: http://localhost:3001/api/auth/login
 5. Body (seleccionar JSON):
 {
   "email": "juan@example.com",
@@ -103,7 +103,7 @@ PRUEBA 1: Devolver equipo SIN RETRASO
 ────────────────────────────────────────────────────
 1. Abre Postman
 2. Token: Usa el que obtuviste del login
-3. POST http://localhost:5000/api/prestamos/devolver
+3. POST http://localhost:3001/api/prestamos/devolver
 4. Headers:
    Authorization | Bearer (pega aquí tu token)
 5. Body (JSON):
@@ -121,7 +121,7 @@ Esperado:
 
 PRUEBA 2: Devolver equipo CON RETRASO
 ────────────────────────────────────────────────────
-1. POST http://localhost:5000/api/prestamos/devolver
+1. POST http://localhost:3001/api/prestamos/devolver
 2. Body:
 {
   "id_prestamo": 102,
@@ -200,7 +200,7 @@ DESDE TU CÓDIGO REACT:
 1. LOGIN:
 ────────────────────────────────────────────────────
 const handleLogin = async (email, password) => {
-  const response = await fetch('http://localhost:5000/api/auth/login', {
+  const response = await fetch('http://localhost:3001/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -225,7 +225,7 @@ const handleLogin = async (email, password) => {
 const handleDevolverEquipo = async (id_prestamo, fecha) => {
   const token = localStorage.getItem('token');
   
-  const response = await fetch('http://localhost:5000/api/prestamos/devolver', {
+  const response = await fetch('http://localhost:3001/api/prestamos/devolver', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -253,7 +253,7 @@ const handleDevolverEquipo = async (id_prestamo, fecha) => {
 7️⃣  ERRORES COMUNES Y SOLUCIONES
 ==========================================================
 
-❌ "Puerto 5000 ya está en uso"
+❌ "Puerto 3001 ya está en uso"
 ──────────────────────────────────────────────────
 Solución: Cambiar puerto en .env
 PORT=5001

@@ -10,7 +10,7 @@ export default function CatalogoEstudiante() {
   const cargarEquipos = async () => {
     try {
       setCargando(true);
-      const respEquipos = await fetch("http://localhost:5000/api/secciones/equipos");
+      const respEquipos = await fetch("http://localhost:3001/api/secciones/equipos");
       
       if (respEquipos.ok) {
         const dataEquipos = await respEquipos.json();
@@ -62,7 +62,7 @@ export default function CatalogoEstudiante() {
     try {
       const token = localStorage.getItem("authToken");
       // Ojo: Asegúrate de que esta URL exista en tu backend para hacer las reservas
-      const response = await fetch(`http://localhost:5000/api/reservas/crear`, {
+      const response = await fetch(`http://localhost:3001/api/reservas/crear`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +90,7 @@ export default function CatalogoEstudiante() {
       setMensaje("❌ Error de conexión al intentar reservar.");
     } finally {
       setReservandoId(null);
-      setTimeout(() => setMensaje(""), 5000); // El mensaje desaparece a los 5 segundos
+      setTimeout(() => setMensaje(""), 3001); // El mensaje desaparece a los 5 segundos
     }
   };
 

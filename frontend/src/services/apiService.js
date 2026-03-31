@@ -1,5 +1,5 @@
 // API Service - Centraliza todas las operaciones CRUD
-const API_URL = "http://localhost:5000";
+const API_URL = "http://localhost:3001";
 
 // OPERACIONES GENERALES (GET, POST, PUT, DELETE)
 export const apiService = {

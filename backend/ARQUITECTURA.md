@@ -15,7 +15,7 @@
                      │ HTTP Requests
                      ▼
 ┌─────────────────────────────────────────────────────┐
-│              EXPRESS SERVER (Puerto 5000)            │
+│              EXPRESS SERVER (Puerto 3001)            │
 │    Node.js + Express + JWT + Motor de Sanciones     │
 ├─────────────────────────────────────────────────────┤
 │                                                       │
@@ -461,13 +461,13 @@ RELACIONES:
    │ Frontend (React)                        │
    │ http://localhost:5173                   │
    │                                         │
-   │ fetch('http://localhost:5000/api/...')  │
+   │ fetch('http://localhost:3001/api/...')  │
    └─────────────────────────────────────────┘
            │
            ▼
    ┌─────────────────────────────────────────┐
    │ Backend (Express)                       │
-   │ http://localhost:5000                   │
+   │ http://localhost:3001                   │
    │                                         │
    │ - Procesa la solicitud                  │
    │ - Aplica lógica de negocio              │
@@ -494,7 +494,7 @@ RELACIONES:
 EJEMPLO EN JAVASCRIPT:
 ═════════════════════════════════════════════════════════════
 // Login
-const response = await fetch('http://localhost:5000/api/auth/login', {
+const response = await fetch('http://localhost:3001/api/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ email, password })
@@ -514,7 +514,7 @@ if (data.exito) {
 }
 
 // Devolver equipo (con token)
-const response = await fetch('http://localhost:5000/api/prestamos/devolver', {
+const response = await fetch('http://localhost:3001/api/prestamos/devolver', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',

@@ -128,7 +128,7 @@ npm install
 npm run dev
 ```
 
-El servidor estará en: **http://localhost:5000**
+El servidor estará en: **http://localhost:3001**
 
 ---
 
@@ -138,7 +138,7 @@ El servidor estará en: **http://localhost:5000**
 
 ```javascript
 // Request
-POST http://localhost:5000/api/prestamos/devolver
+POST http://localhost:3001/api/prestamos/devolver
 Authorization: Bearer <token_del_usuario>
 Content-Type: application/json
 
@@ -233,7 +233,7 @@ POST /api/prestamos/devolver
 
 ```env
 # Puerto del servidor
-PORT=5000
+PORT=3001
 
 # Secreto JWT (cambiar en producción!)
 JWT_SECRET=tu_clave_secreta_super_segura_aqui_cambiar_en_produccion
@@ -342,7 +342,7 @@ Puedes probar el login de inmediato con estos usuarios.
 
 4. **Conectar con Frontend React**
    - El frontend ya está en la carpeta raíz
-   - Hacer requests a `http://localhost:5000/api/...`
+   - Hacer requests a `http://localhost:3001/api/...`
    - Guardar token en localStorage
    - Incluir en header: `Authorization: Bearer {token}`
 

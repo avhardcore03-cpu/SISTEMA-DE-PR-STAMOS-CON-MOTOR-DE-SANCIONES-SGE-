@@ -31,7 +31,7 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
           try {
             // Asumiendo que existe un endpoint que devuelve el usuario
             // Si no existe, puedes decodificar más datos del token
-            const response = await fetch(`http://localhost:5000/api/usuarios/${payload.id}`);
+            const response = await fetch(`http://localhost:3001/api/usuarios/${payload.id}`);
             if (response.ok) {
               const data = await response.json();
               setEstadoUsuario(data.estado || "ACTIVO");
@@ -92,7 +92,7 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
     setMensajeSolicitud("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/prestamos/solicitar", {
+      const response = await fetch("http://localhost:3001/api/prestamos/solicitar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

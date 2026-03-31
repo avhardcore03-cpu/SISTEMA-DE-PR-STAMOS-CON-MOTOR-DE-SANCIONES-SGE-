@@ -14,7 +14,7 @@
 // ============================================================
 
 /*
-POST http://localhost:5000/api/auth/login
+POST http://localhost:3001/api/auth/login
 Content-Type: application/json
 
 {
@@ -43,7 +43,7 @@ RESPUESTA ESPERADA:
 */
 
 /*
-GET http://localhost:5000/api/auth/perfil
+GET http://localhost:3001/api/auth/perfil
 Authorization: Bearer {TOKEN_AQUI}
 
 RESPUESTA ESPERADA:
@@ -62,7 +62,7 @@ RESPUESTA ESPERADA:
 */
 
 /*
-GET http://localhost:5000/api/auth/validar-token
+GET http://localhost:3001/api/auth/validar-token
 Authorization: Bearer {TOKEN_AQUI}
 
 RESPUESTA ESPERADA:
@@ -79,7 +79,7 @@ RESPUESTA ESPERADA:
 
 /*
 TEST CASE 1: Devolución SIN RETRASO
-POST http://localhost:5000/api/prestamos/devolver
+POST http://localhost:3001/api/prestamos/devolver
 Authorization: Bearer {TOKEN_AQUI}
 Content-Type: application/json
 
@@ -117,7 +117,7 @@ RESPUESTA ESPERADA:
 
 /*
 TEST CASE 2: Devolución CON RETRASO (aplicar sanción)
-POST http://localhost:5000/api/prestamos/devolver
+POST http://localhost:3001/api/prestamos/devolver
 Authorization: Bearer {TOKEN_AQUI}
 Content-Type: application/json
 
@@ -160,7 +160,7 @@ PRECONDICIONES:
 1. Usuario con 2 strikes existentes
 2. Nueva devolución con retraso
 
-POST http://localhost:5000/api/prestamos/devolver
+POST http://localhost:3001/api/prestamos/devolver
 Authorization: Bearer {TOKEN_AQUI}
 Content-Type: application/json
 
@@ -200,7 +200,7 @@ RESPUESTA ESPERADA:
 // ============================================================
 
 /*
-GET http://localhost:5000/api/prestamos/usuario/1
+GET http://localhost:3001/api/prestamos/usuario/1
 Authorization: Bearer {TOKEN_AQUI}
 
 Obtiene todos los préstamos (pendientes y devueltos) del usuario 1
@@ -239,7 +239,7 @@ RESPUESTA ESPERADA:
 */
 
 /*
-GET http://localhost:5000/api/prestamos/pendientes
+GET http://localhost:3001/api/prestamos/pendientes
 Authorization: Bearer {TOKEN_AQUI}
 
 IMPORTANTE: Solo SUPERVISOR o ADMIN pueden acceder
@@ -266,7 +266,7 @@ RESPUESTA ESPERADA:
 */
 
 /*
-GET http://localhost:5000/api/prestamos/101
+GET http://localhost:3001/api/prestamos/101
 Authorization: Bearer {TOKEN_AQUI}
 
 Obtiene el detalle de un préstamo específico
@@ -299,7 +299,7 @@ RESPUESTA ESPERADA:
 
 /*
 ERROR: Falta el token
-GET http://localhost:5000/api/auth/perfil
+GET http://localhost:3001/api/auth/perfil
 
 RESPUESTA:
 {
@@ -311,7 +311,7 @@ RESPUESTA:
 
 /*
 ERROR: Token expirado
-GET http://localhost:5000/api/auth/perfil
+GET http://localhost:3001/api/auth/perfil
 Authorization: Bearer {TOKEN_EXPIRADO}
 
 RESPUESTA:
@@ -324,7 +324,7 @@ RESPUESTA:
 
 /*
 ERROR: Credenciales incorrectas
-POST http://localhost:5000/api/auth/login
+POST http://localhost:3001/api/auth/login
 Content-Type: application/json
 
 {
@@ -342,7 +342,7 @@ RESPUESTA:
 
 /*
 ERROR: Usuario suspendido intenta iniciar sesión
-POST http://localhost:5000/api/auth/login
+POST http://localhost:3001/api/auth/login
 Content-Type: application/json
 
 {
@@ -364,7 +364,7 @@ RESPUESTA:
 
 /*
 ERROR: Usuario suspendido intenta devolver equipo
-POST http://localhost:5000/api/prestamos/devolver
+POST http://localhost:3001/api/prestamos/devolver
 Authorization: Bearer {TOKEN_USUARIO_SUSPENDIDO}
 Content-Type: application/json
 
@@ -388,25 +388,25 @@ RESPUESTA:
 /*
 1. LOGIN CON cURL:
 
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"juan@example.com","password":"password123"}'
 
 2. DEVOLVER EQUIPO CON RETRASO:
 
-curl -X POST http://localhost:5000/api/prestamos/devolver \
+curl -X POST http://localhost:3001/api/prestamos/devolver \
   -H "Authorization: Bearer <TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"id_prestamo":102,"fecha_entrega_real":"2024-03-20"}'
 
 3. OBTENER PERFIL:
 
-curl -X GET http://localhost:5000/api/auth/perfil \
+curl -X GET http://localhost:3001/api/auth/perfil \
   -H "Authorization: Bearer <TOKEN>"
 
 4. OBTENER PRÉSTAMOS DEL USUARIO:
 
-curl -X GET http://localhost:5000/api/prestamos/usuario/1 \
+curl -X GET http://localhost:3001/api/prestamos/usuario/1 \
   -H "Authorization: Bearer <TOKEN>"
 */
 

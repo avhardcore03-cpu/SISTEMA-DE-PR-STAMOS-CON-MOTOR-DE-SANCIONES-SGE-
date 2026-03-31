@@ -9,8 +9,8 @@ npm run dev
 
 **Terminal output esperado:**
 ```
-[INFO] Servidor corriendo en puerto 5000
-API disponible en http://localhost:5000
+[INFO] Servidor corriendo en puerto 3001
+API disponible en http://localhost:3001
 ```
 
 ---
@@ -147,7 +147,7 @@ F12 → Console
 **Verificar API:**
 ```javascript
 // En console:
-fetch('http://localhost:5000/api/sanciones/dashboard')
+fetch('http://localhost:3001/api/sanciones/dashboard')
   .then(r => r.json())
   .then(d => console.log(d.datos))
 ```
@@ -167,7 +167,7 @@ Ctrl+Shift+Delete → Cached files
 ## 🐛 SI ALGO NO FUNCIONA
 
 1. **"Network Error"**
-   - ¿Backend en `localhost:5000`?
+   - ¿Backend en `localhost:3001`?
    - Reinicia: `npm run dev`
 
 2. **"Botón gris pero préstamo vencido"**
@@ -182,7 +182,7 @@ Ctrl+Shift+Delete → Cached files
 
 ## ✅ CHECKLIST RÁ PIDO
 
-- [ ] Backend corriendo (puerto 5000)
+- [ ] Backend corriendo (puerto 3001)
 - [ ] Frontend corriendo (puerto 5173)
 - [ ] Login como admin funciona
 - [ ] `/prestamos` muestra tabla

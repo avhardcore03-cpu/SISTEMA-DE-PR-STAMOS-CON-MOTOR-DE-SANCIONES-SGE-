@@ -304,17 +304,17 @@ useEffect(() => {
       setCargando(true);
       
       // Obtener todos los prestamos
-      const respPrestamos = await fetch("http://localhost:5000/api/prestamos");
+      const respPrestamos = await fetch("http://localhost:3001/api/prestamos");
       const dataPrestamos = await respPrestamos.json();
       setPrestamos(dataPrestamos.prestamos || []);
 
       // Obtener usuarios
-      const respUsuarios = await fetch("http://localhost:5000/api/secciones/usuarios");
+      const respUsuarios = await fetch("http://localhost:3001/api/secciones/usuarios");
       const dataUsuarios = await respUsuarios.json();
       setUsuarios(dataUsuarios || []);
 
       // Obtener equipos
-      const respEquipos = await fetch("http://localhost:5000/api/secciones/equipos");
+      const respEquipos = await fetch("http://localhost:3001/api/secciones/equipos");
       const dataEquipos = await respEquipos.json();
       setEquipos(dataEquipos || []);
 
@@ -340,7 +340,7 @@ const handleCrearPrestamo = async () => {
 
   try {
     const token = localStorage.getItem("authToken");
-    const response = await fetch("http://localhost:5000/api/prestamos/crear", {
+    const response = await fetch("http://localhost:3001/api/prestamos/crear", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -414,7 +414,7 @@ useEffect(() => {
       setCargando(true);
       
       // Obtener dashboard de sanciones
-      const respDashboard = await fetch("http://localhost:5000/api/sanciones/dashboard");
+      const respDashboard = await fetch("http://localhost:3001/api/sanciones/dashboard");
       const dataDashboard = await respDashboard.json();
       
       if (dataDashboard.exito) {
@@ -422,7 +422,7 @@ useEffect(() => {
       }
       
       // Obtener lista de sancionados
-      const respSancionados = await fetch("http://localhost:5000/api/sanciones");
+      const respSancionados = await fetch("http://localhost:3001/api/sanciones");
       const dataSancionados = await respSancionados.json();
       
       if (dataSancionados.exito && dataSancionados.datos) {

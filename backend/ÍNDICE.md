@@ -303,7 +303,7 @@ Documentación:
 ❓ "¿Cómo añado más usuarios?"
    └─> Edita src/database/db.js → usuariosDB array
 
-❓ "¿Cómo cambio el puerto 5000?"
+❓ "¿Cómo cambio el puerto 3001?"
    └─> Edita .env → PORT=NUEVO_PUERTO
 
 ❓ "¿Cómo migro a SQL?"
@@ -336,7 +336,7 @@ Antes de presentar ante el profesor, verifica:
 Backend funcionando:
 □ npm install completado
 □ npm run dev sin errores
-□ http://localhost:5000 accesible
+□ http://localhost:3001 accesible
 
 Entiendo la arquitectura:
 □ Leí ARQUITECTURA.md completo

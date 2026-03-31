@@ -385,7 +385,7 @@ Admin lo reactiva               │ 3          │ ACTIVO      │ Puede usar to
 Cuando ejecutes npm run dev debes ver:
 
 ✓ Servidor inicia sin errores
-✓ Escucha en http://localhost:5000
+✓ Escucha en http://localhost:3001
 ✓ Log muestra: "Backend iniciado correctamente"
 
 Cuando hagas POST /api/auth/login:
