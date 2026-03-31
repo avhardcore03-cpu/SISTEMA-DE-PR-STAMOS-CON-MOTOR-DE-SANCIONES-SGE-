@@ -1,5 +1,6 @@
 /**
  * Configuración Principal de la Aplicación Express - INTEGRACIÓN TOTAL CON SANCIONES
+ * FIX: CRUD DE INVENTARIO (PUT) Y LÓGICA DE STRIKES
  */
 
 import express from 'express'; 
@@ -18,9 +19,9 @@ const app = express();
 
 // ===== DATOS EN MEMORIA ACTUALIZADOS =====
 let miInventario = [
-  { id: 1, nombre: "Laptop Dell", cantidad: 5, estado: "Disponible" },
-  { id: 2, nombre: "Mouse Logitech", cantidad: 10, estado: "Disponible" },
-  { id: 3, nombre: "Teclado Mecánico", cantidad: 8, estado: "Disponible" }
+  { id: 1, nombre: "Laptop Dell", categoria: "Laptops", cantidad: 5, estado: "Disponible" },
+  { id: 2, nombre: "Mouse Logitech", categoria: "Periféricos", cantidad: 10, estado: "Disponible" },
+  { id: 3, nombre: "Teclado Mecánico", categoria: "Periféricos", cantidad: 8, estado: "Disponible" }
 ];
 
 let misPrestamos = [];
@@ -41,7 +42,6 @@ app.use((req, res, next) => {
 // ===== 🔑 LOGIN HÍBRIDO =====
 app.post('/api/auth/login', (req, res) => {
   const { username } = req.body;
-  // Buscamos si el usuario está suspendido antes de dejarlo entrar
   const user = usuariosDB[0]; 
 
   return res.status(200).json({
@@ -51,35 +51,63 @@ app.post('/api/auth/login', (req, res) => {
   });
 });
 
-// ===== 📦 RUTAS DE INVENTARIO =====
+// ===== 📦 RUTAS DE INVENTARIO (CRUD COMPLETO) =====
+
 app.get('/api/inventario', (req, res) => res.json(miInventario));
 
+// 1. CREAR (POST)
 app.post('/api/inventario', (req, res) => {
-  const { nombre, cantidad } = req.body;
-  const nuevoEquipo = { id: Date.now(), nombre, cantidad: Number(cantidad), estado: "Disponible" };
+  const { nombre, categoria, cantidad } = req.body;
+  const nuevoEquipo = { 
+    id: Date.now(), 
+    nombre, 
+    categoria: categoria || "General", 
+    cantidad: Number(cantidad), 
+    estado: "Disponible" 
+  };
   miInventario.push(nuevoEquipo);
   res.status(201).json(nuevoEquipo);
 });
 
+// 2. ACTUALIZAR (PUT) - ¡ESTO ERA LO QUE TE FALTABA!
+app.put('/api/inventario/:id', (req, res) => {
+  const { id } = req.params;
+  const { nombre, categoria, cantidad } = req.body;
+  
+  const indice = miInventario.findIndex(item => item.id === Number(id));
+
+  if (indice !== -1) {
+    miInventario[indice] = {
+      ...miInventario[indice],
+      nombre: nombre || miInventario[indice].nombre,
+      categoria: categoria || miInventario[indice].categoria,
+      cantidad: Number(cantidad)
+    };
+    console.log(`✅ Equipo ID ${id} actualizado correctamente`);
+    res.json(miInventario[indice]);
+  } else {
+    res.status(404).json({ mensaje: "Equipo no encontrado" });
+  }
+});
+
+// 3. ELIMINAR (DELETE)
 app.delete('/api/inventario/:id', (req, res) => {
   const { id } = req.params;
   miInventario = miInventario.filter(item => item.id !== Number(id));
   res.json({ exito: true });
 });
 
-// ===== 🤝 RUTAS DE PRÉSTAMOS CON BLOQUEO Y FECHAS (MEJORADO) =====
+// ===== 🤝 RUTAS DE PRÉSTAMOS CON BLOQUEO Y FECHAS =====
 
 app.get('/api/prestamos', (req, res) => res.json(misPrestamos));
 
-// 1. CREAR PRÉSTAMO CON BLOQUEO
 app.post('/api/prestamos', (req, res) => {
   const { productoId, usuario, cantidad, productoNombre, fecha_pactada } = req.body;
   
-  // VALIDACIÓN DE BLOQUEO: Si el usuario tiene 3 strikes o está suspendido
-  const userCheck = usuariosDB[0]; // En producción esto buscaría por ID
+  const userCheck = usuariosDB[0]; 
   if (userCheck.estado === 'Suspendido' || userCheck.strikes >= 3) {
     return res.status(403).json({ 
-      mensaje: "⛔ BLOQUEO: El usuario está SUSPENDIDO por exceso de strikes. No puede retirar equipos." 
+      mensaje: "⛔ BLOQUEO: El usuario está SUSPENDIDO por exceso de strikes." 
     });
   }
 
@@ -94,7 +122,7 @@ app.post('/api/prestamos', (req, res) => {
         usuario, 
         cantidad,
         fecha_salida: new Date().toISOString().split('T')[0],
-        fecha_pactada: fecha_pactada, // El dato que te pidió tu compañera
+        fecha_pactada: fecha_pactada, 
         estado: "Pendiente"
     };
     misPrestamos.push(nuevoPrestamo);
@@ -104,51 +132,44 @@ app.post('/api/prestamos', (req, res) => {
   }
 });
 
-// 2. DEVOLVER PRÉSTAMO CON CÁLCULO DE STRIKES (Lo que pidió Andrés/Compañera)
+// DEVOLVER CON CÁLCULO DE STRIKES
 app.post('/api/prestamos/devolver/:id', (req, res) => {
   const { id } = req.params;
-  const { fecha_real_entrega } = req.body; // Fecha que llega desde el frontend
+  const { fecha_real_entrega } = req.body; 
   
   const prestamoIndex = misPrestamos.findIndex(p => p.id === Number(id));
   
   if (prestamoIndex !== -1) {
     const prestamo = misPrestamos[prestamoIndex];
-    const fechaEsperada = new Date(prestamo.fecha_pactada);
-    const fechaReal = new Date(fecha_real_entrega);
     
-    let sancionAplicada = false;
+    // Normalizamos fechas para comparar solo año-mes-día
+    const fechaEsperada = new Date(prestamo.fecha_pactada + "T00:00:00");
+    const fechaReal = new Date(fecha_real_entrega + "T00:00:00");
+    
+    let mensaje = "Devolución a tiempo.";
 
-    // COMPARACIÓN DE FECHAS
     if (fechaReal > fechaEsperada) {
-        // Sumar Strike al usuario
         usuariosDB[0].strikes += 1;
-        sancionAplicada = true;
+        mensaje = `⚠️ RETRASO: Strike #${usuariosDB[0].strikes} aplicado.`;
 
-        // SUSPENSIÓN AUTOMÁTICA
         if (usuariosDB[0].strikes >= 3) {
             usuariosDB[0].estado = 'Suspendido';
+            mensaje += " Usuario SUSPENDIDO automáticamente.";
         }
     }
 
-    // Devolver al inventario
     const producto = miInventario.find(p => p.id === Number(prestamo.productoId));
     if (producto) producto.cantidad += prestamo.cantidad;
     
-    // Eliminar de préstamos activos
     misPrestamos.splice(prestamoIndex, 1);
 
-    res.json({ 
-        exito: true, 
-        mensaje: sancionAplicada ? "Retraso detectado: +1 Strike aplicado." : "Devolución a tiempo.",
-        totalStrikes: usuariosDB[0].strikes,
-        estadoUsuario: usuariosDB[0].estado
-    });
+    res.json({ exito: true, mensaje });
   } else {
     res.status(404).json({ mensaje: "Préstamo no encontrado" });
   }
 });
 
-// RUTAS DE ANDRÉS
+// RUTAS COMPLEMENTARIAS
 app.use('/api/auth', authRoutes);
 app.use('/api/prestamos_andres', prestamosRoutes);
 app.use('/api/catalogo', catalogoRoutes);
@@ -157,7 +178,7 @@ app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/reservas', reservasRoutes);
 app.use('/api/secciones', seccionesRoutes);
 
-app.get('/', (req, res) => res.status(200).send('✅ Servidor SGE: ONLINE CON SISTEMA DE STRIKES'));
+app.get('/', (req, res) => res.status(200).send('✅ Servidor SGE: ONLINE CON SISTEMA DE STRIKES Y CRUD'));
 
 app.use((error, req, res, next) => {
   res.status(500).json({ exito: false, mensaje: error.message });
