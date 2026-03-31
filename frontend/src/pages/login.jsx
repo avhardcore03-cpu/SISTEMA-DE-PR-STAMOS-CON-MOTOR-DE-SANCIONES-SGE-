@@ -1,25 +1,24 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-  
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
   // 2. Herramienta para cambiar de página después de entrar
   //const navigate = useNavigate(); estoy moviendo esta línea arriba para que esté junto a los otros useState
 
   // 3. El motor del botón "Iniciar Sesión"
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
@@ -27,16 +26,19 @@ function Login() {
 
       if (response.ok) {
         // Guardar token con clave "authToken" para que App.jsx pueda extraer el rol
-        localStorage.setItem('authToken', data.token);
-        
+        localStorage.setItem("authToken", data.token);
+        const usuario = data.user || data.usuario;
+        if (usuario) {
+          localStorage.setItem("user", JSON.stringify(usuario));
+        }
+
         // Redirigir al catálogo (disponible para todos los roles)
-        navigate('/catalogo'); 
-        
+        navigate("/catalogo");
       } else {
-        setError(data.message || 'Error al iniciar sesión');
+        setError(data.message || "Error al iniciar sesión");
       }
     } catch (error) {
-      setError('Error de conexión');
+      setError("Error de conexión");
     }
   };
   return (
@@ -52,7 +54,6 @@ function Login() {
         <p className="text-gray-500 text-sm mb-6">IU Digital de Antioquia</p>
 
         <form onSubmit={handleLogin} className="text-left space-y-6">
-          
           {/* Aquí mostramos la alerta roja si algo sale mal */}
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-sm">
@@ -88,8 +89,8 @@ function Login() {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="w-full bg-[#008c72] hover:bg-[#00705b] text-white font-bold py-4 rounded-xl shadow-lg transition-all transform active:scale-95"
           >
             Iniciar Sesión

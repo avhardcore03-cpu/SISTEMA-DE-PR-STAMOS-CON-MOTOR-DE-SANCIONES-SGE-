@@ -78,11 +78,7 @@ export const apiService = {
 
 // CATÁLOGO
 export const catalogoService = {
-  getAll: () => apiService.getAll("api/catalogo"),
-  getById: (id) => apiService.getById("api/catalogo", id),
-  create: (data) => apiService.create("api/catalogo", data),
-  update: (id, data) => apiService.update("api/catalogo", id, data),
-  delete: (id) => apiService.delete("api/catalogo", id),
+  getAll: () => apiService.getAll("api/inventario"),
 };
 
 // INVENTARIO

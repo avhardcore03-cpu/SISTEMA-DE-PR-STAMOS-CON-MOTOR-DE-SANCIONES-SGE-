@@ -7,9 +7,7 @@ import Login from "./pages/login";
 import Inventario from "./pages/inventario";
 import Prestamos from "./pages/prestamos";
 import Sanciones from "./pages/sanciones";
-import Catalogo from "./pages/catalogo"; 
-import CatalogoEstudiante from "./pages/CatalogoEstudiante"; 
-import GestionReservas from "./pages/GestionReservas"; 
+import Catalogo from "./pages/catalogo";
 
 function App() {
   const location = useLocation();
@@ -18,14 +16,16 @@ function App() {
 
   useEffect(() => {
     // 1. Extraemos los datos del almacenamiento local
-    const savedUser = JSON.parse(localStorage.getItem("user")); 
+    const savedUser = JSON.parse(
+      localStorage.getItem("user") || localStorage.getItem("usuario") || "null",
+    );
     const token = localStorage.getItem("authToken");
-    
+
     if (savedUser) {
-      setUser(savedUser); 
-    } else if (token === "token-de-emergencia-12345") {
-      // Caso de prueba para desarrollo
-      setUser({ id: 1, username: "Admin", role: "ADMIN", estado: "Activo" }); 
+      setUser(savedUser);
+    } else if (token) {
+      // Si hay token pero no hay usuario persistido, evitamos asumir rol ADMIN.
+      setUser(null);
     } else {
       setUser(null);
     }
@@ -34,19 +34,23 @@ function App() {
 
   // Lógica de permisos y bloqueos
   const rol = user?.role;
-  const estaSuspendido = user?.estado === "Suspendido";
   const esEstudiante = rol === "ESTUDIANTE";
-  
+
   // No mostrar el Sidebar en Login o si no hay sesión
   const mostrarSidebar = location.pathname !== "/" && user !== null;
   const margenIzquierdo = mostrarSidebar ? "pl-64" : "";
 
-  if (cargando) return <div className="flex justify-center items-center h-screen">Cargando sistema...</div>;
+  if (cargando)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Cargando sistema...
+      </div>
+    );
 
   return (
     <div className="flex">
       {/* El Sidebar recibe el rol y el estado para saber si bloquear funciones */}
-      {mostrarSidebar && <Sidebar rol={rol} suspendido={estaSuspendido} />}
+      {mostrarSidebar && <Sidebar rol={rol} />}
 
       <main className={`flex-1 ${margenIzquierdo} min-h-screen bg-gray-50`}>
         <Routes>
@@ -58,20 +62,45 @@ function App() {
             <>
               {/* Si el estudiante está suspendido, podrías redirigirlo a una página de aviso, 
                   pero aquí lo dejamos entrar al catálogo para que vea sus sanciones */}
-              <Route 
-                path="/catalogo" 
-                element={esEstudiante ? <CatalogoEstudiante /> : <Catalogo />} 
+              <Route
+                path="/catalogo"
+                element={<Catalogo esEstudiante={esEstudiante} />}
               />
 
               {/* SECCIONES DE ADMINISTRACIÓN */}
-              <Route path="/inventario" element={<Inventario />} />
-              
-              {/* Pasamos el estado al componente de préstamos para que bloquee el botón de "Prestar" */}
-              <Route path="/prestamos" element={<Prestamos userStatus={user.estado} />} />
-              
-              <Route path="/sanciones" element={<Sanciones />} />
-              <Route path="/reservas" element={<GestionReservas />} />
+              <Route
+                path="/inventario"
+                element={
+                  esEstudiante ? (
+                    <Navigate to="/catalogo" replace />
+                  ) : (
+                    <Inventario />
+                  )
+                }
+              />
 
+              {/* Pasamos el estado al componente de préstamos para que bloquee el botón de "Prestar" */}
+              <Route
+                path="/prestamos"
+                element={
+                  esEstudiante ? (
+                    <Navigate to="/catalogo" replace />
+                  ) : (
+                    <Prestamos userStatus={user.estado} />
+                  )
+                }
+              />
+
+              <Route
+                path="/sanciones"
+                element={
+                  esEstudiante ? (
+                    <Navigate to="/catalogo" replace />
+                  ) : (
+                    <Sanciones />
+                  )
+                }
+              />
               {/* Redirección por defecto */}
               <Route path="*" element={<Navigate to="/catalogo" replace />} />
             </>

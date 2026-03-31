@@ -61,7 +61,7 @@ export default function Sidebar() {
         >
           🗂️ Catálogo de Equipos
         </Link>
-        
+
         {/* Solo mostrar Gestión e Inventario si es ADMIN */}
         {rol === "ADMIN" && (
           <>

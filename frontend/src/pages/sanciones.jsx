@@ -4,7 +4,6 @@ export default function Sanciones() {
   const [sancionados, setSancionados] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [perdonando, setPerdonando] = useState({});
-  const [asignando, setAsignando] = useState({});
   const [actualizando, setActualizando] = useState(false); // 🔄 Estado para el updater
   const [mensaje, setMensaje] = useState("");
   const [trigger, setTrigger] = useState(0);
@@ -82,24 +81,6 @@ export default function Sanciones() {
       setMensaje("❌ Error al perdonar");
     } finally {
       setPerdonando({ ...perdonando, [usuarioId]: false });
-    }
-  };
-
-  const handleAsignarStrike = async (usuarioId, nombreUsuario) => {
-    setAsignando({ ...asignando, [usuarioId]: true });
-    try {
-      const res = await fetch(
-        `http://localhost:3001/api/usuarios/${usuarioId}/strike`,
-        { method: "PUT" },
-      );
-      if (res.ok) {
-        setMensaje(`⚠️ Strike manual asignado a ${nombreUsuario}.`);
-        setTrigger((prev) => prev + 1);
-      }
-    } catch (e) {
-      setMensaje("❌ Error al asignar strike");
-    } finally {
-      setAsignando({ ...asignando, [usuarioId]: false });
     }
   };
 
@@ -286,14 +267,7 @@ export default function Sanciones() {
                         {estadoColor.label}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center space-x-2">
-                      <button
-                        onClick={() => handleAsignarStrike(u.id, u.nombre)}
-                        disabled={asignando[u.id]}
-                        className="bg-orange-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                      >
-                        + Strike
-                      </button>
+                    <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handlePerdonar(u.id, u.nombre)}
                         disabled={perdonando[u.id]}

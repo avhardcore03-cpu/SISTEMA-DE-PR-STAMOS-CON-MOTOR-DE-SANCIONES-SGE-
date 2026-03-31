@@ -1,11 +1,15 @@
-# Sistema de Préstamos con Motor de Sanciones (SGE)
+# Sistema de Prestamos con Motor de Sanciones (SGE)
 
-Aplicación frontend en React (Vite) con una base de datos local simulada usando `json-server`.
+Proyecto fullstack con:
 
-## Requisitos previos
+- Backend: Node.js + Express
+- Frontend: React + Vite
+- Datos: en memoria RAM (sin base de datos externa)
 
-- Node.js 18 o superior
-- npm (incluido con Node.js)
+## Requisitos
+
+- Node.js 18+
+- npm
 - Git
 
 ## 1) Clonar el repositorio
@@ -18,42 +22,59 @@ cd SISTEMA-DE-PR-STAMOS-CON-MOTOR-DE-SANCIONES-SGE-
 ## 2) Instalar dependencias
 
 ```bash
+cd backend
+npm install
+
+cd ../frontend
 npm install
 ```
 
-## 3) Levantar la base de datos local (json-server)
+## 3) Levantar el backend
 
-En una terminal nueva, entra primero a la carpeta `data`:
-
-```bash
-cd data
-npx json-server --watch db.json --port 3001
-```
-
-La API quedará disponible en:
-
-- `http://localhost:3001/catalogo`
-- `http://localhost:3001/inventario`
-- `http://localhost:3001/prestamos`
-- `http://localhost:3001/sanciones`
-
-## 4) Encender React (frontend)
-
-En otra terminal (sin cerrar la de `json-server`):
+Desde la carpeta `backend`:
 
 ```bash
 npm run dev
 ```
 
-Luego abre la URL que muestre Vite en consola (normalmente `http://localhost:5173`).
+Backend disponible en: `http://localhost:3001`
 
-## Flujo recomendado de ejecución
+## 4) Levantar el frontend
 
-1. Terminal 1: `cd data` y luego `npx json-server --watch db.json --port 3001`
-2. Terminal 2: `npm run dev`
+En otra terminal, desde la carpeta `frontend`:
 
-## Solución rápida de problemas
+```bash
+npm run dev
+```
 
-- Si el frontend no carga datos, verifica que `json-server` esté corriendo en el puerto `3001`.
-- Si `npm run dev` falla por scripts faltantes, revisa que el archivo `package.json` sea el correcto del proyecto React/Vite.
-- Si el puerto `3001 `5173` está ocupado, cierra el proceso que lo usa o cambia el puerto.
+Frontend disponible en: `http://localhost:5173`
+
+## Credenciales de prueba
+
+### Admin
+
+- Email: `admin@example.com`
+- Password: `admin`
+
+### Estudiante activo
+
+- Email: `ana.activa@example.com`
+- Password: `password123`
+
+### Estudiantes suspendidos (para pruebas)
+
+- `carlos.ramirez@example.com` / `password123`
+- `marta.sanchez@example.com` / `password123`
+- `juan.perez@example.com` / `password123`
+
+## Notas importantes
+
+- Los datos se cargan en RAM al iniciar el backend.
+- Si reinicias el backend, se restablecen inventario, prestamos y sanciones de prueba.
+- El catalogo del frontend consume datos desde `GET /api/inventario`.
+
+## Solucion rapida de problemas
+
+- Si no carga el frontend, verifica que backend este corriendo en `3001`.
+- Si falla el login, revisa email/password exactos.
+- Si `5173` o `3001` estan ocupados, cierra el proceso que usa el puerto.

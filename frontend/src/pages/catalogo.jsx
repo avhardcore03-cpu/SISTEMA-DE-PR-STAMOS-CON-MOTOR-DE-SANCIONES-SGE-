@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useApi } from "../hooks/useApi";
 import { catalogoService } from "../services/apiService";
 import { useNavigate } from "react-router-dom";
 
-const Catalogo = ({ esEstudiante = false, rol = null }) => {
+const Catalogo = ({ esEstudiante = false }) => {
   const navigate = useNavigate();
-  const [filtroActivo, setFiltroActivo] = useState("Todos");
   const [busqueda, setBusqueda] = useState("");
   const [usuarioId, setUsuarioId] = useState(null);
   const [estadoUsuario, setEstadoUsuario] = useState("ACTIVO"); //  ESTADO DEL USUARIO
@@ -15,47 +14,71 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
 
   const { datos: equipos, cargando } = useApi(catalogoService.getAll, trigger);
 
-  const equiposDisponiblesContador = equipos.filter(e => e.estado === "Disponible").length;
+  const equiposDisponiblesContador = equipos.filter(
+    (e) => e.estado === "Disponible",
+  ).length;
 
+  const obtenerPayloadJwt = (token) => {
+    if (!token || !token.includes(".")) return null;
+
+    const partes = token.split(".");
+    if (partes.length < 2) return null;
+
+    try {
+      return JSON.parse(atob(partes[1]));
+    } catch {
+      return null;
+    }
+  };
 
   // Extraer ID del usuario del token y obtener su estado
   useEffect(() => {
     const token = localStorage.getItem("authToken");
+    const usuarioGuardado = JSON.parse(
+      localStorage.getItem("user") || localStorage.getItem("usuario") || "null",
+    );
+
     if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        setUsuarioId(payload.id);
-        
-        //  OBTENER ESTADO DEL USUARIO
-        const cargarEstadoUsuario = async () => {
-          try {
-            // Asumiendo que existe un endpoint que devuelve el usuario
-            // Si no existe, puedes decodificar más datos del token
-            const response = await fetch(`http://localhost:3001/api/usuarios/${payload.id}`);
-            if (response.ok) {
-              const data = await response.json();
-              setEstadoUsuario(data.estado || "ACTIVO");
-            }
-          } catch (error) {
-            console.error("Error al obtener estado del usuario:", error);
-            // Por defecto usar ACTIVO si hay error
-            setEstadoUsuario("ACTIVO");
-          }
-        };
-        
-        cargarEstadoUsuario();
-      } catch (error) {
-        console.error("Error al decodificar el token:", error);
+      const payload = obtenerPayloadJwt(token);
+
+      // Token de emergencia o token invalido para JWT: usar fallback local
+      if (!payload) {
+        if (usuarioGuardado?.id) {
+          setUsuarioId(usuarioGuardado.id);
+        }
+        setEstadoUsuario((usuarioGuardado?.estado || "ACTIVO").toUpperCase());
+        return;
       }
+
+      setUsuarioId(payload.id);
+
+      //  OBTENER ESTADO DEL USUARIO
+      const cargarEstadoUsuario = async () => {
+        try {
+          // Asumiendo que existe un endpoint que devuelve el usuario
+          // Si no existe, puedes decodificar más datos del token
+          const response = await fetch(
+            `http://localhost:3001/api/usuarios/${payload.id}`,
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setEstadoUsuario((data.estado || "ACTIVO").toUpperCase());
+          }
+        } catch (error) {
+          console.error("Error al obtener estado del usuario:", error);
+          // Por defecto usar ACTIVO si hay error
+          setEstadoUsuario("ACTIVO");
+        }
+      };
+
+      cargarEstadoUsuario();
     }
   }, []);
-  useEffect(() => {
-    setTrigger(prev => prev + 1); // esta función refresca el catálogo al cargar el componente
-  }, []);
-
   // Función para cerrar sesión
   const handleLogout = () => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("usuario");
     navigate("/");
   };
 
@@ -66,24 +89,13 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
       .replace(/[\u0300-\u036f]/g, "")
       .trim();
 
-  const categorias = [
-    "Todos",
-    "Computadoras",
-    "Audio/Video",
-    "Tablets",
-    "Fotografía",
-  ];
-
   const busquedaNormalizada = normalizarTexto(busqueda);
   const equiposFiltrados = equipos.filter((equipo) => {
-    const coincideCategoria =
-      filtroActivo === "Todos" ||
-      normalizarTexto(equipo.categoria) === normalizarTexto(filtroActivo);
     const coincideBusqueda =
       normalizarTexto(equipo.nombre).includes(busquedaNormalizada) ||
       normalizarTexto(equipo.id).includes(busquedaNormalizada) ||
       normalizarTexto(equipo.categoria).includes(busquedaNormalizada);
-    return coincideCategoria && coincideBusqueda;
+    return coincideBusqueda;
   });
 
   // Función para solicitar un equipo (solo estudiantes)
@@ -92,28 +104,35 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
     setMensajeSolicitud("");
 
     try {
-      const response = await fetch("http://localhost:3001/api/prestamos_andres/solicitar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_usuario: usuarioId,
-          id_equipo: idEquipo,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:3001/api/prestamos/solicitar",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id_usuario: usuarioId,
+            id_equipo: idEquipo,
+          }),
+        },
+      );
 
       const data = await response.json();
 
       if (response.ok) {
-        setMensajeSolicitud(`✅ Solicitud de "${nombreEquipo}" enviada correctamente`);
-        
+        setMensajeSolicitud(
+          `✅ Solicitud de "${nombreEquipo}" enviada correctamente`,
+        );
+
         // ✨ REFRESCAR DATOS DEL CATÁLOGO tras solicitud exitosa
         setTimeout(() => {
-          setTrigger(prev => prev + 1);
+          setTrigger((prev) => prev + 1);
         }, 800);
-        
+
         setTimeout(() => setMensajeSolicitud(""), 3000);
       } else {
-        setMensajeSolicitud(`❌ Error: ${data.mensaje || "No se pudo procesar la solicitud"}`);
+        setMensajeSolicitud(
+          `❌ Error: ${data.mensaje || "No se pudo procesar la solicitud"}`,
+        );
       }
     } catch (error) {
       console.error("Error al solicitar equipo:", error);
@@ -141,7 +160,7 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
               Equipos Disponibles
             </p>
             <p className="text-4xl font-black text-[#008c72]">
-              {cargando ? "..." : equiposDisponiblesContador} 
+              {cargando ? "..." : equiposDisponiblesContador}
             </p>
           </div>
           {esEstudiante && (
@@ -158,16 +177,18 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
       {/* ⭐ BANNER DE USUARIO SUSPENDIDO */}
       {esEstudiante && estadoUsuario === "SUSPENDIDO" && (
         <div className="mb-6 p-5 bg-red-50 border-2 border-red-400 rounded-lg flex items-start gap-4">
-          <span className="text-3xl flex-shrink-0">🚫</span>
+          <span className="text-3xl shrink-0">🚫</span>
           <div>
             <h3 className="font-bold text-red-700 text-lg mb-1">
               Tu cuenta está suspendida
             </h3>
             <p className="text-red-600 text-sm mb-2">
-              Por favor devuelve los equipos pendientes o contacta al administrador para reactivar tu acceso.
+              Por favor devuelve los equipos pendientes o contacta al
+              administrador para reactivar tu acceso.
             </p>
             <p className="text-xs text-red-500 italic">
-              Se han acumulado múltiples retrasos en devoluciones. Esto ha resultado en la suspensión temporal de tu cuenta.
+              Se han acumulado múltiples retrasos en devoluciones. Esto ha
+              resultado en la suspensión temporal de tu cuenta.
             </p>
           </div>
         </div>
@@ -175,16 +196,18 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
 
       {/* Mensaje de solicitud */}
       {mensajeSolicitud && (
-        <div className={`mb-6 p-4 rounded-lg border ${
-          mensajeSolicitud.includes("✅")
-            ? "bg-green-100 border-green-300 text-green-700"
-            : "bg-red-100 border-red-300 text-red-700"
-        }`}>
+        <div
+          className={`mb-6 p-4 rounded-lg border ${
+            mensajeSolicitud.includes("✅")
+              ? "bg-green-100 border-green-300 text-green-700"
+              : "bg-red-100 border-red-300 text-red-700"
+          }`}
+        >
           {mensajeSolicitud}
         </div>
       )}
 
-      {/* Buscador y Botones de Filtro */}
+      {/* Buscador */}
       <div className="flex flex-wrap items-center gap-4 mb-8">
         <div className="relative flex-1 min-w-75">
           <span className="absolute left-4 top-2.5 text-gray-400">🔍</span>
@@ -195,22 +218,6 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
-        </div>
-
-        <div className="flex gap-2">
-          {categorias.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFiltroActivo(cat)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${
-                filtroActivo === cat
-                  ? "bg-[#008c72] text-white border-[#008c72]"
-                  : "bg-white text-gray-400 border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -228,7 +235,7 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="flex gap-4 flex-1">
-                  <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl border border-gray-100 group-hover:scale-105 transition-transform flex-shrink-0">
+                  <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl border border-gray-100 group-hover:scale-105 transition-transform shrink-0">
                     {equipo.icono || "📦"}
                   </div>
                   <div>
@@ -242,7 +249,7 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
                 </div>
 
                 <span
-                  className={`px-3 py-1 rounded-full text-[9px] font-black border uppercase tracking-tighter flex-shrink-0 ${
+                  className={`px-3 py-1 rounded-full text-[9px] font-black border uppercase tracking-tighter shrink-0 ${
                     equipo.estado === "Disponible"
                       ? "bg-green-100 text-green-600 border-green-200"
                       : equipo.estado === "En Mantenimiento"
@@ -290,7 +297,11 @@ const Catalogo = ({ esEstudiante = false, rol = null }) => {
                           ? "bg-blue-400 text-white animate-pulse"
                           : "bg-[#008c72] hover:bg-[#006b56] text-white"
                   }`}
-                  title={estadoUsuario === "SUSPENDIDO" ? "Tu cuenta está suspendida" : ""}
+                  title={
+                    estadoUsuario === "SUSPENDIDO"
+                      ? "Tu cuenta está suspendida"
+                      : ""
+                  }
                 >
                   {estadoUsuario === "SUSPENDIDO"
                     ? "Cuenta Suspendida"
