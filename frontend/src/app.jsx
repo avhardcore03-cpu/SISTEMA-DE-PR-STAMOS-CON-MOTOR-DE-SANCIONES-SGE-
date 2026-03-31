@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "./components/sidebar";
 
 // Importación de Páginas
-import Login from "./pages/Login";
+import Login from "./pages/login";
 import Inventario from "./pages/inventario";
 import Prestamos from "./pages/prestamos";
 import Sanciones from "./pages/sanciones";
