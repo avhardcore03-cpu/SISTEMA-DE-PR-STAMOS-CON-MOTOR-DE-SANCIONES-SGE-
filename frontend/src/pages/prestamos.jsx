@@ -3,14 +3,15 @@ import { useState, useEffect } from "react";
 const Prestamos = ({ userStatus }) => {
   // Recibimos el estado del usuario desde App.jsx
   const [inventario, setInventario] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [prestamos, setPrestamos] = useState([]);
   const [productoId, setProductoId] = useState("");
-  const [usuario, setUsuario] = useState("");
-  const [cantidad, setCantidad] = useState("");
-  const [fechaPactada, setFechaPactada] = useState(""); // Nueva mejora: Fecha de entrega
+  const [idUsuario, setIdUsuario] = useState("");
+  const [fechaPactada, setFechaPactada] = useState("");
 
   const API_INV = "http://localhost:3001/api/inventario";
   const API_PRE = "http://localhost:3001/api/prestamos";
+  const API_USU = "http://localhost:3001/api/usuarios";
   const estaSuspendido = (userStatus || "").toUpperCase() === "SUSPENDIDO";
 
   useEffect(() => {
@@ -21,14 +22,19 @@ const Prestamos = ({ userStatus }) => {
     try {
       const resInv = await fetch(API_INV);
       const resPre = await fetch(API_PRE);
+      const resUsu = await fetch(API_USU);
       if (resInv.ok) setInventario(await resInv.json());
       if (resPre.ok) setPrestamos(await resPre.json());
+      if (resUsu.ok) {
+        const data = await resUsu.json();
+        setUsuarios(data?.datos || []);
+      }
     } catch (e) {
       console.error("Error al cargar datos:", e);
     }
   };
 
-  const manejarDevolver = async (id, fechaPactada) => {
+  const manejarDevolver = async (id) => {
     if (
       !window.confirm(
         "¿Confirmas la devolución? El sistema verificará si hay retraso.",
@@ -65,15 +71,17 @@ const Prestamos = ({ userStatus }) => {
       );
     }
 
-    if (!productoId || !usuario || !cantidad || !fechaPactada) {
-      return alert(
-        "Por favor, completa todos los datos, incluyendo la fecha de devolución.",
-      );
+    if (!productoId || !idUsuario) {
+      return alert("Selecciona usuario y equipo.");
     }
 
-    const productoSeleccionado = inventario.find(
-      (item) => item.id === Number(productoId),
+    const usuarioSeleccionado = usuarios.find(
+      (u) => u.id === Number(idUsuario),
     );
+
+    if (!usuarioSeleccionado) {
+      return alert("Selecciona un usuario válido.");
+    }
 
     try {
       const res = await fetch(API_PRE, {
@@ -81,17 +89,15 @@ const Prestamos = ({ userStatus }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productoId: Number(productoId),
-          productoNombre: productoSeleccionado?.nombre || "Equipo",
-          usuario,
-          cantidad: Number(cantidad),
-          fecha_pactada: fechaPactada, // Enviamos el dato que pidió la compañera
+          id_usuario: Number(idUsuario),
+          usuario: usuarioSeleccionado.email,
+          fecha_pactada: fechaPactada || undefined,
         }),
       });
 
       if (res.ok) {
         setProductoId("");
-        setUsuario("");
-        setCantidad("");
+        setIdUsuario("");
         setFechaPactada("");
         cargarTodo();
         alert("¡Préstamo registrado con éxito!");
@@ -116,7 +122,7 @@ const Prestamos = ({ userStatus }) => {
       </div>
 
       {/* FORMULARIO MEJORADO */}
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Equipo
@@ -139,37 +145,35 @@ const Prestamos = ({ userStatus }) => {
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Usuario
           </label>
-          <input
+          <select
             className="w-full border-slate-200 border-2 p-3 rounded-xl bg-slate-50 outline-none focus:border-emerald-500"
-            placeholder="Nombre"
-            value={usuario}
-            onChange={(e) => setUsuario(e.target.value)}
-          />
+            value={idUsuario}
+            onChange={(e) => setIdUsuario(e.target.value)}
+          >
+            <option value="">Selecciona...</option>
+            {usuarios
+              .filter((u) => u.rol === "ESTUDIANTE")
+              .map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nombre} - {u.estado}
+                </option>
+              ))}
+          </select>
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Cant.
-          </label>
-          <input
-            type="number"
-            className="w-full border-slate-200 border-2 p-3 rounded-xl bg-slate-50"
-            value={cantidad}
-            onChange={(e) => setCantidad(e.target.value)}
-          />
-        </div>
-
-        {/* NUEVO CAMPO: FECHA PACTADA */}
-        <div>
-          <label className="block text-sm font-bold text-emerald-600 mb-2">
-            Fecha Devolución
+            Fecha de devolución
           </label>
           <input
             type="date"
-            className="w-full border-emerald-200 border-2 p-3 rounded-xl bg-emerald-50 outline-none"
+            className="w-full border-slate-200 border-2 p-3 rounded-xl bg-slate-50 outline-none focus:border-emerald-500"
             value={fechaPactada}
             onChange={(e) => setFechaPactada(e.target.value)}
           />
+          <p className="text-xs text-slate-500 mt-1">
+            Si se deja vacío, se asignan 7 días automáticamente.
+          </p>
         </div>
 
         <button
@@ -205,7 +209,7 @@ const Prestamos = ({ userStatus }) => {
                 Cant: {p.cantidad}
               </span>
               <button
-                onClick={() => manejarDevolver(p.id, p.fecha_pactada)}
+                onClick={() => manejarDevolver(p.id)}
                 className="text-red-500 hover:text-red-700 font-bold text-sm"
               >
                 Registrar Devolución

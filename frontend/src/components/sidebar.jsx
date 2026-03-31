@@ -83,6 +83,12 @@ export default function Sidebar() {
             >
               ⚠️ Sanciones
             </Link>
+            <Link
+              to="/usuarios"
+              className="flex items-center gap-3 p-3 hover:bg-white/10 rounded-lg transition-all duration-200"
+            >
+              👥 Usuarios
+            </Link>
           </>
         )}
       </nav>

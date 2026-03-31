@@ -7,6 +7,7 @@ import Inventario from "./pages/inventario";
 import Prestamos from "./pages/prestamos";
 import Sanciones from "./pages/sanciones";
 import Catalogo from "./pages/catalogo";
+import Usuarios from "./pages/usuarios";
 
 function App() {
   const location = useLocation();
@@ -75,6 +76,17 @@ function App() {
                     <Navigate to="/catalogo" replace />
                   ) : (
                     <Sanciones />
+                  )
+                }
+              />
+
+              <Route
+                path="/usuarios"
+                element={
+                  esEstudiante ? (
+                    <Navigate to="/catalogo" replace />
+                  ) : (
+                    <Usuarios />
                   )
                 }
               />

@@ -56,16 +56,22 @@ Frontend disponible en: `http://localhost:5173`
 - Email: `admin@example.com`
 - Password: `admin`
 
-### Estudiante activo
+### Estudiantes activos
 
-- Email: `ana.activa@example.com`
-- Password: `password123`
+- `luis.gonzalez@example.com` / `password123`
+- `iris.martinez@example.com` / `password123`
+- `andrea.lopez@example.com` / `password123`
 
-### Estudiantes suspendidos (para pruebas)
+### Estudiante suspendido para probar la vista estudiante
 
-- `carlos.ramirez@example.com` / `password123`
-- `marta.sanchez@example.com` / `password123`
 - `juan.perez@example.com` / `password123`
+- Estado esperado: `SUSPENDIDO`
+- Resultado esperado al intentar solicitar prestamo: bloqueo por suspension
+
+### Otros estados de sancion (referencia)
+
+- `carlos.ramirez@example.com` / `password123` -> `OBSERVACION` (1 strike)
+- `marta.sanchez@example.com` / `password123` -> `ADVERTENCIA` (2 strikes)
 
 ## Notas importantes
 

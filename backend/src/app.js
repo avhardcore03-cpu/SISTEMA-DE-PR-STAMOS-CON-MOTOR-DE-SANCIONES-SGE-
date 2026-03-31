@@ -5,143 +5,51 @@
 
 import express from "express";
 import cors from "cors";
+import {
+  usuariosDB as usuariosSeed,
+  equiposDB as equiposSeed,
+  prestamosDB as prestamosSeed,
+} from "./database/db.js";
 
 const app = express();
 
-// ===== DATOS EN MEMORIA ACTUALIZADOS =====
-let miInventario = [
-  {
-    id: 1,
-    nombre: "Laptop Dell",
-    categoria: "Laptops",
-    cantidad: 3,
-    estado: "Disponible",
-  },
-  {
-    id: 2,
-    nombre: "Mouse Logitech",
-    categoria: "Periféricos",
-    cantidad: 8,
-    estado: "Disponible",
-  },
-  {
-    id: 3,
-    nombre: "Teclado Mecánico",
-    categoria: "Periféricos",
-    cantidad: 7,
-    estado: "Disponible",
-  },
-];
+// ===== DATOS EN MEMORIA INICIALIZADOS DESDE db.js =====
+const toISODate = (value) => {
+  const d = value instanceof Date ? value : new Date(value);
+  return d.toISOString().split("T")[0];
+};
 
-let misPrestamos = [
-  {
-    id: 1001,
-    id_usuario: 2,
-    productoId: 1,
-    productoNombre: "Laptop Dell",
-    usuario: "AnaActiva",
-    cantidad: 1,
-    fecha_salida: "2026-03-25",
-    fecha_pactada: "2026-04-05",
-    estado: "Pendiente",
-  },
-  {
-    id: 1002,
-    id_usuario: 3,
-    productoId: 2,
-    productoNombre: "Mouse Logitech",
-    usuario: "CarlosSuspendido",
-    cantidad: 1,
-    fecha_salida: "2026-03-10",
-    fecha_pactada: "2026-03-15",
-    estado: "Pendiente",
-  },
-  {
-    id: 1003,
-    id_usuario: 4,
-    productoId: 1,
-    productoNombre: "Laptop Dell",
-    usuario: "MartaSuspendida",
-    cantidad: 1,
-    fecha_salida: "2026-03-12",
-    fecha_pactada: "2026-03-22",
-    estado: "Pendiente",
-  },
-  {
-    id: 1004,
-    id_usuario: 5,
-    productoId: 3,
-    productoNombre: "Teclado Mecánico",
-    usuario: "JuanSuspendido",
-    cantidad: 1,
-    fecha_salida: "2026-03-14",
-    fecha_pactada: "2026-03-24",
-    estado: "Pendiente",
-  },
-  {
-    id: 1005,
-    id_usuario: 2,
-    productoId: 2,
-    productoNombre: "Mouse Logitech",
-    usuario: "AnaActiva",
-    cantidad: 1,
-    fecha_salida: "2026-03-28",
-    fecha_pactada: "2026-04-08",
-    estado: "Pendiente",
-  },
-];
+let miInventario = equiposSeed.map((equipo) => ({
+  id: equipo.id,
+  nombre: equipo.nombre,
+  categoria: equipo.categoria,
+  cantidad: Number(equipo.stock_total ?? 0),
+  estado: equipo.estado || "Disponible",
+}));
 
-// Simulamos una base de usuarios para controlar los Strikes y el Bloqueo
-let usuariosDB = [
-  {
-    id: 1,
-    username: "AdminDemo",
-    email: "admin@example.com",
-    password: "admin",
-    rol: "ADMIN",
-    strikes: 0,
-    estado: "ACTIVO",
-  },
-  {
-    id: 2,
-    username: "AnaActiva",
-    email: "ana.activa@example.com",
-    password: "password123",
-    rol: "ESTUDIANTE",
-    strikes: 0,
-    estado: "ACTIVO",
-  },
-  {
-    id: 3,
-    username: "CarlosSuspendido",
-    email: "carlos.ramirez@example.com",
-    password: "password123",
-    rol: "ESTUDIANTE",
-    strikes: 0,
-    estado: "ACTIVO",
-  },
-  {
-    id: 4,
-    username: "MartaSuspendida",
-    email: "marta.sanchez@example.com",
-    password: "password123",
-    rol: "ESTUDIANTE",
-    strikes: 1,
-    estado: "OBSERVACIÓN",
-  },
-  {
-    id: 5,
-    username: "JuanSuspendido",
-    email: "juan.perez@example.com",
-    password: "password123",
-    rol: "ESTUDIANTE",
-    strikes: 2,
-    estado: "ADVERTENCIA",
-  },
-];
+let usuariosDB = usuariosSeed.map((u) => ({
+  id: u.id,
+  username: u.nombre,
+  email: u.email,
+  // Contraseñas de prueba para entorno local.
+  password: u.rol === "ADMIN" ? "admin" : "password123",
+  rol: u.rol,
+  strikes: Number(u.strikes || 0),
+  estado: u.estado || "ACTIVO",
+}));
 
-const obtenerUsuarioDemoPrestamo = () =>
-  usuariosDB.find((u) => u.rol === "ESTUDIANTE") || usuariosDB[0];
+let misPrestamos = prestamosSeed.map((p) => ({
+  id: p.id_prestamo,
+  id_usuario: p.id_usuario,
+  productoId: p.id_equipo,
+  productoNombre: p.nombre_equipo,
+  usuario: p.nombre_usuario,
+  cantidad: 1,
+  fecha_salida: toISODate(p.fecha_prestamo),
+  fecha_pactada: toISODate(p.fecha_devolucion),
+  estado: p.estado === "PENDIENTE" ? "Pendiente" : "Devuelto",
+  sancionAplicada: false,
+}));
 
 const hoyMasDias = (dias) => {
   const fecha = new Date();
@@ -154,6 +62,22 @@ const calcularEstadoPorStrikes = (strikes) => {
   if (strikes === 2) return "ADVERTENCIA";
   if (strikes === 1) return "OBSERVACIÓN";
   return "ACTIVO";
+};
+
+const buscarUsuarioPrestamo = ({ id_usuario, usuario }) => {
+  if (id_usuario) {
+    return usuariosDB.find((u) => u.id === Number(id_usuario));
+  }
+
+  if (usuario) {
+    const clave = String(usuario).trim().toLowerCase();
+    return usuariosDB.find(
+      (u) =>
+        u.username.toLowerCase() === clave || u.email.toLowerCase() === clave,
+    );
+  }
+
+  return null;
 };
 
 app.use(express.json());
@@ -180,6 +104,13 @@ app.post("/api/auth/login", (req, res) => {
 
   if (!user || user.password !== password) {
     return res.status(401).json({ message: "Credenciales inválidas." });
+  }
+
+  if (user.estado === "SUSPENDIDO" || user.strikes >= 3) {
+    return res.status(403).json({
+      exito: false,
+      message: "Usuario suspendido. No puede iniciar sesión.",
+    });
   }
 
   return res.status(200).json({
@@ -217,6 +148,109 @@ app.get("/api/usuarios/:id", (req, res) => {
     estado: usuario.estado,
     strikes: usuario.strikes,
   });
+});
+
+app.get("/api/usuarios", (req, res) => {
+  const usuarios = usuariosDB.map((u) => ({
+    id: u.id,
+    nombre: u.username,
+    email: u.email,
+    rol: u.rol,
+    estado: u.estado,
+    strikes: u.strikes,
+  }));
+
+  return res.status(200).json({
+    exito: true,
+    datos: usuarios,
+  });
+});
+
+app.post("/api/usuarios", (req, res) => {
+  const { nombre, email, rol } = req.body;
+
+  if (!nombre || !email) {
+    return res.status(400).json({
+      exito: false,
+      mensaje: "Nombre y email son obligatorios.",
+    });
+  }
+
+  const emailNormalizado = String(email).trim().toLowerCase();
+  const existe = usuariosDB.some(
+    (u) => u.email.toLowerCase() === emailNormalizado,
+  );
+  if (existe) {
+    return res.status(409).json({
+      exito: false,
+      mensaje: "Ya existe un usuario con ese email.",
+    });
+  }
+
+  const nuevoId = usuariosDB.length
+    ? Math.max(...usuariosDB.map((u) => u.id)) + 1
+    : 1;
+
+  const nuevoUsuario = {
+    id: nuevoId,
+    username: String(nombre).trim(),
+    email: emailNormalizado,
+    password: "password123",
+    rol: rol === "ADMIN" ? "ADMIN" : "ESTUDIANTE",
+    strikes: 0,
+    estado: "ACTIVO",
+  };
+
+  usuariosDB.push(nuevoUsuario);
+
+  return res.status(201).json({
+    exito: true,
+    mensaje: "Usuario creado correctamente.",
+    datos: {
+      id: nuevoUsuario.id,
+      nombre: nuevoUsuario.username,
+      email: nuevoUsuario.email,
+      rol: nuevoUsuario.rol,
+      estado: nuevoUsuario.estado,
+      strikes: nuevoUsuario.strikes,
+    },
+  });
+});
+
+app.delete("/api/usuarios/:id", (req, res) => {
+  const { id } = req.params;
+  const idNumero = Number(id);
+  const indice = usuariosDB.findIndex((u) => u.id === idNumero);
+
+  if (indice === -1) {
+    return res
+      .status(404)
+      .json({ exito: false, mensaje: "Usuario no encontrado." });
+  }
+
+  const usuario = usuariosDB[indice];
+  if (usuario.rol === "ADMIN") {
+    return res.status(400).json({
+      exito: false,
+      mensaje: "No se puede eliminar un usuario administrador.",
+    });
+  }
+
+  const tienePrestamoPendiente = misPrestamos.some(
+    (p) => p.id_usuario === idNumero && p.estado === "Pendiente",
+  );
+
+  if (tienePrestamoPendiente) {
+    return res.status(400).json({
+      exito: false,
+      mensaje: "No se puede eliminar: el usuario tiene prestamos pendientes.",
+    });
+  }
+
+  usuariosDB.splice(indice, 1);
+  return res
+    .status(200)
+    .json({ exito: true, mensaje: "Usuario eliminado correctamente." });
 });
 
 // ===== 📦 RUTAS DE INVENTARIO (CRUD COMPLETO) =====
@@ -328,29 +362,38 @@ app.post("/api/prestamos/solicitar", (req, res) => {
 app.get("/api/prestamos", (req, res) => res.json(misPrestamos));
 
 app.post("/api/prestamos", (req, res) => {
-  const { productoId, usuario, cantidad, productoNombre, fecha_pactada } =
-    req.body;
+  const { productoId, id_usuario, usuario, fecha_pactada } = req.body;
+  const usuarioPrestamo = buscarUsuarioPrestamo({ id_usuario, usuario });
 
-  const userCheck = obtenerUsuarioDemoPrestamo();
-  if (userCheck.estado === "SUSPENDIDO" || userCheck.strikes >= 3) {
+  if (!usuarioPrestamo) {
+    return res.status(404).json({
+      mensaje: "Usuario no encontrado para registrar el préstamo.",
+    });
+  }
+
+  if (usuarioPrestamo.estado === "SUSPENDIDO" || usuarioPrestamo.strikes >= 3) {
     return res.status(403).json({
       mensaje: "⛔ BLOQUEO: El usuario está SUSPENDIDO por exceso de strikes.",
     });
   }
 
   const producto = miInventario.find((p) => p.id === Number(productoId));
+  const cantidad = 1;
+  const fechaPactada = fecha_pactada || hoyMasDias(7);
 
   if (producto && producto.cantidad >= cantidad) {
     producto.cantidad -= cantidad;
     const nuevoPrestamo = {
       id: Date.now(),
-      productoId,
-      productoNombre,
-      usuario,
+      id_usuario: usuarioPrestamo.id,
+      productoId: Number(productoId),
+      productoNombre: producto.nombre,
+      usuario: usuarioPrestamo.username,
       cantidad,
       fecha_salida: new Date().toISOString().split("T")[0],
-      fecha_pactada: fecha_pactada,
+      fecha_pactada: fechaPactada,
       estado: "Pendiente",
+      sancionAplicada: false,
     };
     misPrestamos.push(nuevoPrestamo);
     res.status(201).json(nuevoPrestamo);
@@ -419,7 +462,7 @@ app.get("/api/sanciones", (req, res) => {
       return {
         id: u.id,
         nombre: u.username,
-        email: `${u.username.toLowerCase()}@demo.local`,
+        email: u.email,
         rol: u.rol,
         strikes: u.strikes,
         estado: u.estado,
@@ -454,6 +497,25 @@ app.get("/api/sanciones/dashboard", (req, res) => {
 });
 
 app.post("/api/sanciones/actualizar", (req, res) => {
+  const hoy = new Date();
+  let sancionesAplicadas = 0;
+
+  misPrestamos.forEach((prestamo) => {
+    const vencido =
+      prestamo.estado === "Pendiente" &&
+      new Date(`${prestamo.fecha_pactada}T00:00:00`) < hoy;
+
+    if (vencido && !prestamo.sancionAplicada) {
+      const usuario = usuariosDB.find((u) => u.id === prestamo.id_usuario);
+      if (usuario) {
+        usuario.strikes += 1;
+        usuario.estado = calcularEstadoPorStrikes(usuario.strikes);
+        prestamo.sancionAplicada = true;
+        sancionesAplicadas += 1;
+      }
+    }
+  });
+
   usuariosDB = usuariosDB.map((u) => ({
     ...u,
     estado: calcularEstadoPorStrikes(u.strikes),
@@ -461,7 +523,7 @@ app.post("/api/sanciones/actualizar", (req, res) => {
 
   return res.status(200).json({
     exito: true,
-    mensaje: "Estados de sanciones actualizados en RAM.",
+    mensaje: `Estados de sanciones actualizados en RAM. Nuevas sanciones: ${sancionesAplicadas}`,
   });
 });
 
