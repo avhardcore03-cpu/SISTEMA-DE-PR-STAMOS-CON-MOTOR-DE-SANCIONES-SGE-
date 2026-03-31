@@ -3,7 +3,7 @@
  * Este archivo une el sistema de Andrés con tu Inventario, Préstamos y Sanciones.
  */
 
-import express from 'express';
+import express from 'express'; 
 import cors from 'cors';
 import { config } from './config/config.js';
 
@@ -16,7 +16,7 @@ import reservasRoutes from './routes/reservasRoutes.js';
 import sancionesRoutes from './routes/sancionesRoutes.js';
 import usuariosRoutes from './routes/usuariosRoutes.js';
 
-const app = express();
+const app = express(); 
 
 // ===== DATOS EN MEMORIA (Tu Base de Datos Temporal) =====
 let miInventario = [

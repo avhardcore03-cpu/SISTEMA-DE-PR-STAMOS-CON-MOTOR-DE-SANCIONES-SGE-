@@ -18,7 +18,7 @@ app.get("/inventario", (req, res) => {
   res.json(inventario);
 });
 
-// RUTA PARA CREAR PRÉSTAMO
+// RUTA PARA CREAR PRÉSTAMO 
 app.post("/prestamos", (req, res) => {
   const { productoId, usuario, cantidad } = req.body;
 
