@@ -21,8 +21,8 @@ export default function Sanciones() {
       try {
         setCargando(true);
         const [respDash, respSanc] = await Promise.all([
-          fetch("http://localhost:5000/api/sanciones/dashboard"),
-          fetch("http://localhost:5000/api/sanciones"),
+          fetch("http://localhost:3001/api/sanciones/dashboard"),
+          fetch("http://localhost:3001/api/sanciones"),
         ]);
 
         const dataDash = await respDash.json();
@@ -45,7 +45,7 @@ export default function Sanciones() {
     setMensaje("");
     try {
       const response = await fetch(
-        "http://localhost:5000/api/sanciones/actualizar",
+        "http://localhost:3001/api/sanciones/actualizar",
         {
           method: "POST", // O el método que use tu backend para procesar sanciones
         },
@@ -71,7 +71,7 @@ export default function Sanciones() {
     setPerdonando({ ...perdonando, [usuarioId]: true });
     try {
       const res = await fetch(
-        `http://localhost:5000/api/sanciones/perdonar/${usuarioId}`,
+        `http://localhost:3001/api/sanciones/perdonar/${usuarioId}`,
         { method: "PUT" },
       );
       if (res.ok) {
@@ -89,7 +89,7 @@ export default function Sanciones() {
     setAsignando({ ...asignando, [usuarioId]: true });
     try {
       const res = await fetch(
-        `http://localhost:5000/api/usuarios/${usuarioId}/strike`,
+        `http://localhost:3001/api/usuarios/${usuarioId}/strike`,
         { method: "PUT" },
       );
       if (res.ok) {
