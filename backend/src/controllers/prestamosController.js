@@ -4,7 +4,7 @@
  * Este es el corazón del negocio: detectar retrasos, aplicar strikes y manejar inventario.
  */
 
-import { config } from '../config/config.js';
+import { config } from "../config/config.js";
 import {
   crearSolicitudPrestamo,
   obtenerPrestamoPorId,
@@ -16,8 +16,8 @@ import {
   obtenerTodosPrestamos,
   calcularFechaConDiasHabiles,
   obtenerPrestamosVencidos,
-  asignarStrike
-} from '../database/db.js';
+  asignarStrike,
+} from "../database/db.js";
 
 /**
  * Función auxiliar para calcular el número de días de retraso
@@ -28,10 +28,10 @@ import {
 const calcularDiasRetraso = (fechaEsperada, fechaReal) => {
   const fecha1 = new Date(fechaEsperada);
   const fecha2 = new Date(fechaReal);
-  
+
   const tiempoEnMilisegundos = fecha2 - fecha1;
   const diasRetraso = Math.ceil(tiempoEnMilisegundos / (1000 * 60 * 60 * 24));
-  
+
   return diasRetraso > 0 ? diasRetraso : 0;
 };
 
@@ -44,107 +44,115 @@ export const devolverEquipo = async (req, res) => {
     // Soportamos el ID tanto por body (tu original) como por params (desde el frontend embebido)
     const id_prestamo = req.body.id_prestamo || req.params.id;
     const fecha_entrega_real = req.body.fecha_entrega_real || new Date();
-    
+
     if (!id_prestamo) {
       return res.status(400).json({
         exito: false,
-        mensaje: 'id_prestamo es requerido.',
-        codigo: 'DATOS_INCOMPLETOS'
+        mensaje: "id_prestamo es requerido.",
+        codigo: "DATOS_INCOMPLETOS",
       });
     }
-    
+
     const prestamo = obtenerPrestamoPorId(parseInt(id_prestamo));
-    
+
     if (!prestamo) {
       return res.status(404).json({
         exito: false,
         mensaje: `El préstamo con ID ${id_prestamo} no existe.`,
-        codigo: 'PRESTAMO_NO_ENCONTRADO'
+        codigo: "PRESTAMO_NO_ENCONTRADO",
       });
     }
-    
-    if (prestamo.estado === 'DEVUELTO') {
+
+    if (prestamo.estado === "DEVUELTO") {
       return res.status(400).json({
         exito: false,
-        mensaje: 'Este préstamo ya ha sido devuelto previamente.',
-        codigo: 'PRESTAMO_YA_DEVUELTO'
+        mensaje: "Este préstamo ya ha sido devuelto previamente.",
+        codigo: "PRESTAMO_YA_DEVUELTO",
       });
     }
-    
+
     const usuario = obtenerUsuarioPorId(prestamo.id_usuario);
-    
+
     if (!usuario) {
       return res.status(404).json({
         exito: false,
-        mensaje: 'El usuario asociado al préstamo no existe.',
-        codigo: 'USUARIO_NO_ENCONTRADO'
+        mensaje: "El usuario asociado al préstamo no existe.",
+        codigo: "USUARIO_NO_ENCONTRADO",
       });
     }
-    
+
     // ===== LÓGICA DEL MOTOR DE SANCIONES =====
-    const diasRetraso = calcularDiasRetraso(prestamo.fecha_esperada || prestamo.fecha_devolucion, fecha_entrega_real);
-    
+    const diasRetraso = calcularDiasRetraso(
+      prestamo.fecha_esperada || prestamo.fecha_devolucion,
+      fecha_entrega_real,
+    );
+
     let huboRetraso = false;
     let strikesAntesDelRetraso = usuario.strikes;
-    
+
     if (diasRetraso > 0) {
       huboRetraso = true;
       usuario.strikes += 1;
-      
-      console.log(`⚠️  SANCIÓN APLICADA: Usuario ${usuario.nombre} - ${diasRetraso} días de retraso`);
-      console.log(`   Strikes antes: ${strikesAntesDelRetraso} | Strikes después: ${usuario.strikes}`);
+
+      console.log(
+        `⚠️  SANCIÓN APLICADA: Usuario ${usuario.nombre} - ${diasRetraso} días de retraso`,
+      );
+      console.log(
+        `   Strikes antes: ${strikesAntesDelRetraso} | Strikes después: ${usuario.strikes}`,
+      );
     }
-    
+
     if (usuario.strikes >= config.TACKLES_PARA_SUSPENDER) {
       actualizarEstadoPorStrikes(usuario);
-      console.log(`🚫 USUARIO SUSPENDIDO: ${usuario.nombre} ha alcanzado ${usuario.strikes} strikes`);
+      console.log(
+        `🚫 USUARIO SUSPENDIDO: ${usuario.nombre} ha alcanzado ${usuario.strikes} strikes`,
+      );
     }
-    
+
     // ===== ACTUALIZAR ESTADO DEL PRÉSTAMO =====
-    prestamo.estado = 'DEVUELTO';
+    prestamo.estado = "DEVUELTO";
     prestamo.fecha_entrega_real = new Date(fecha_entrega_real);
-    
+
     // ⭐ ACTUALIZAR STOCK MATEMÁTICAMENTE ⭐
-    const equipo = equiposDB.find(e => e.id === prestamo.id_equipo);
+    const equipo = equiposDB.find((e) => e.id === prestamo.id_equipo);
     if (equipo) {
       equipo.stock_total += 1; // Sumamos 1 de vuelta al inventario
     }
 
-    let mensaje = 'Equipo devuelto exitosamente. Stock restaurado.';
+    let mensaje = "Equipo devuelto exitosamente. Stock restaurado.";
     let codigoRespuesta = 200;
-    
+
     if (huboRetraso) {
       mensaje = `Equipo devuelto con ${diasRetraso} día(s) de retraso. Se ha registrado una sanción. Stock restaurado.`;
     }
-    
-    if (usuario.estado === 'SUSPENDIDO') {
+
+    if (usuario.estado === "SUSPENDIDO") {
       mensaje += ` ⚠️ ALERTA: Tu cuenta ha sido suspendida por exceso de retrasos (${usuario.strikes} strikes).`;
     }
-    
+
     return res.status(codigoRespuesta).json({
       exito: true,
       mensaje,
       datos: {
         prestamo: {
           ...prestamo,
-          diasRetraso
+          diasRetraso,
         },
         usuario: {
           id: usuario.id,
           nombre: usuario.nombre,
           estado: usuario.estado,
           strikes: usuario.strikes,
-          huboRetraso
-        }
-      }
+          huboRetraso,
+        },
+      },
     });
-    
   } catch (error) {
-    console.error('Error en devolverEquipo:', error);
+    console.error("Error en devolverEquipo:", error);
     return res.status(500).json({
       exito: false,
-      mensaje: 'Error al procesar la devolución del equipo',
-      error: error.message
+      mensaje: "Error al procesar la devolución del equipo",
+      error: error.message,
     });
   }
 };
@@ -156,23 +164,28 @@ export const devolverEquipo = async (req, res) => {
 export const obtenerPrestamosDelUsuario = (req, res) => {
   try {
     const { id_usuario } = req.params;
-    
+
     if (isNaN(id_usuario)) {
-      return res.status(400).json({ exito: false, mensaje: 'El ID debe ser un número.' });
+      return res
+        .status(400)
+        .json({ exito: false, mensaje: "El ID debe ser un número." });
     }
-    
+
     const usuario = obtenerUsuarioPorId(parseInt(id_usuario));
     if (!usuario) {
-      return res.status(404).json({ exito: false, mensaje: 'Usuario no existe.' });
+      return res
+        .status(404)
+        .json({ exito: false, mensaje: "Usuario no existe." });
     }
-    
-    const prestamosDeLusuario = prestamosDB.filter(p => p.id_usuario === parseInt(id_usuario));
-    
+
+    const prestamosDeLusuario = prestamosDB.filter(
+      (p) => p.id_usuario === parseInt(id_usuario),
+    );
+
     return res.status(200).json({
       exito: true,
-      datos: { prestamos: prestamosDeLusuario }
+      datos: { prestamos: prestamosDeLusuario },
     });
-    
   } catch (error) {
     return res.status(500).json({ exito: false, error: error.message });
   }
@@ -184,10 +197,15 @@ export const obtenerPrestamosDelUsuario = (req, res) => {
  */
 export const obtenerPrestamossPendientes = (req, res) => {
   try {
-    const prestamosPendientes = prestamosDB.filter(p => p.estado === 'PENDIENTE');
+    const prestamosPendientes = prestamosDB.filter(
+      (p) => p.estado === "PENDIENTE",
+    );
     return res.status(200).json({
       exito: true,
-      datos: { cantidad: prestamosPendientes.length, prestamos: prestamosPendientes }
+      datos: {
+        cantidad: prestamosPendientes.length,
+        prestamos: prestamosPendientes,
+      },
     });
   } catch (error) {
     return res.status(500).json({ exito: false, error: error.message });
@@ -202,9 +220,12 @@ export const obtenerDetallePrestamo = (req, res) => {
   try {
     const { id_prestamo } = req.params;
     const prestamo = obtenerPrestamoPorId(parseInt(id_prestamo));
-    
-    if (!prestamo) return res.status(404).json({ exito: false, mensaje: 'Préstamo no existe.' });
-    
+
+    if (!prestamo)
+      return res
+        .status(404)
+        .json({ exito: false, mensaje: "Préstamo no existe." });
+
     const usuario = obtenerUsuarioPorId(prestamo.id_usuario);
     return res.status(200).json({ exito: true, datos: { prestamo, usuario } });
   } catch (error) {
@@ -218,16 +239,23 @@ export const obtenerDetallePrestamo = (req, res) => {
 export const solicitarEquipo = (req, res) => {
   try {
     const { id_usuario, id_equipo } = req.body;
-    
-    if (!id_usuario || !id_equipo) return res.status(400).json({ exito: false, mensaje: 'Faltan datos.' });
-    
+
+    if (!id_usuario || !id_equipo)
+      return res.status(400).json({ exito: false, mensaje: "Faltan datos." });
+
     const usuario = obtenerUsuarioPorId(id_usuario);
-    if (!usuario) return res.status(404).json({ exito: false, mensaje: 'Usuario no existe.' });
-    
-    if (usuario.estado === 'SUSPENDIDO') return res.status(403).json({ exito: false, mensaje: 'Usuario suspendido.' });
-    
+    if (!usuario)
+      return res
+        .status(404)
+        .json({ exito: false, mensaje: "Usuario no existe." });
+
+    if (usuario.estado === "SUSPENDIDO")
+      return res
+        .status(403)
+        .json({ exito: false, mensaje: "Usuario suspendido." });
+
     const nuevoPrestamo = crearSolicitudPrestamo(id_usuario, id_equipo);
-    
+
     return res.status(201).json({ exito: true, datos: nuevoPrestamo });
   } catch (error) {
     return res.status(500).json({ exito: false, error: error.message });
@@ -240,11 +268,11 @@ export const solicitarEquipo = (req, res) => {
  */
 export const obtenerTodosPrestamosController = (req, res) => {
   try {
-    // Mantenemos la lógica de devolver un array directo si el frontend lo espera así, 
+    // Mantenemos la lógica de devolver un array directo si el frontend lo espera así,
     // pero también incluimos tu formato de respuesta original por seguridad.
     const todosLosPrestamos = obtenerTodosPrestamos();
     // const prestamosVencidos = obtenerPrestamosVencidos();
-    
+
     return res.status(200).json({ prestamos: todosLosPrestamos }); // Ajustado para que encaje con dataPrestamos.prestamos en React
   } catch (error) {
     return res.status(500).json({ exito: false, error: error.message });
@@ -258,42 +286,59 @@ export const obtenerTodosPrestamosController = (req, res) => {
 export const crearPrestamo = async (req, res) => {
   try {
     const { id_usuario, id_equipo, fecha_prestamo } = req.body;
-    
+
     if (!id_usuario || !id_equipo || !fecha_prestamo) {
-      return res.status(400).json({ 
-        exito: false, 
-        mensaje: "❌ Faltan datos: usuario, equipo o fecha."
+      return res.status(400).json({
+        exito: false,
+        mensaje: "❌ Faltan datos: usuario, equipo o fecha.",
       });
     }
 
     const usuario = obtenerUsuarioPorId(parseInt(id_usuario));
-    if (!usuario) return res.status(404).json({ exito: false, mensaje: 'Usuario no encontrado.' });
-    
-    const equipo = equiposDB.find(e => e.id === parseInt(id_equipo));
-    if (!equipo) return res.status(404).json({ exito: false, mensaje: 'Equipo no encontrado.' });
-    
+    if (!usuario)
+      return res
+        .status(404)
+        .json({ exito: false, mensaje: "Usuario no encontrado." });
+
+    const equipo = equiposDB.find((e) => e.id === parseInt(id_equipo));
+    if (!equipo)
+      return res
+        .status(404)
+        .json({ exito: false, mensaje: "Equipo no encontrado." });
+
     // Calcular fechas
     const fechaPrestamoObj = new Date(fecha_prestamo);
-    const fechaDevolucionObj = calcularFechaConDiasHabiles(fechaPrestamoObj, 15);
-    
-    if (fechaPrestamoObj > fechaDevolucionObj) return res.status(400).json({ exito: false, mensaje: 'Fecha inválida.' });
-    
+    const fechaDevolucionObj = calcularFechaConDiasHabiles(
+      fechaPrestamoObj,
+      15,
+    );
+
+    if (fechaPrestamoObj > fechaDevolucionObj)
+      return res.status(400).json({ exito: false, mensaje: "Fecha inválida." });
+
     // VALIDAR STOCK
-    const prestamosActivosDelEquipo = prestamosDB.filter(p => p.id_equipo === parseInt(id_equipo) && p.estado === 'PENDIENTE').length;
+    const prestamosActivosDelEquipo = prestamosDB.filter(
+      (p) => p.id_equipo === parseInt(id_equipo) && p.estado === "PENDIENTE",
+    ).length;
     const stockDisponible = equipo.stock_total - prestamosActivosDelEquipo;
-    
+
     if (stockDisponible <= 0 || equipo.stock_total <= 0) {
-      return res.status(400).json({ exito: false, mensaje: `El equipo no tiene disponibilidad.` });
+      return res
+        .status(400)
+        .json({ exito: false, mensaje: `El equipo no tiene disponibilidad.` });
     }
-    
+
     // ⭐ ACTUALIZAR STOCK MATEMÁTICAMENTE ⭐
-    equipo.stock_total -= 1; 
+    equipo.stock_total -= 1;
 
     // CREAR NUEVO PRÉSTAMO
-    const maxId = prestamosDB.length > 0 ? Math.max(...prestamosDB.map(p => p.id_prestamo || p.id)) : 100;
-    
+    const maxId =
+      prestamosDB.length > 0
+        ? Math.max(...prestamosDB.map((p) => p.id_prestamo || p.id))
+        : 100;
+
     const nuevoPrestamo = {
-      id: maxId + 1, 
+      id: maxId + 1,
       id_prestamo: maxId + 1,
       id_usuario: parseInt(id_usuario),
       nombre_usuario: usuario.nombre,
@@ -303,26 +348,25 @@ export const crearPrestamo = async (req, res) => {
       id_equipo: parseInt(id_equipo),
       nombre_equipo: equipo.nombre,
       fecha_prestamo: fechaPrestamoObj,
-      fecha_esperada: fechaDevolucionObj, 
+      fecha_esperada: fechaDevolucionObj,
       fecha_devolucion: fechaDevolucionObj,
       fecha_entrega_real: null,
-      estado: 'PENDIENTE',
+      estado: "PENDIENTE",
       fecha_sancion: null,
-      dias_retraso: 0
+      dias_retraso: 0,
     };
-    
+
     prestamosDB.push(nuevoPrestamo);
-    
+
     // Responder exactamente con la estructura que el frontend espera para mostrar el mensaje
-    return res.status(201).json({ 
-      exito: true, 
-      mensaje: 'Préstamo creado.', 
+    return res.status(201).json({
+      exito: true,
+      mensaje: "Préstamo creado.",
       datos: {
         ...nuevoPrestamo,
-        fecha_devolucion: fechaDevolucionObj.toISOString() // Formateado para que React lo lea
-      }
+        fecha_devolucion: fechaDevolucionObj.toISOString(), // Formateado para que React lo lea
+      },
     });
-    
   } catch (error) {
     return res.status(500).json({ exito: false, error: error.message });
   }
@@ -335,20 +379,33 @@ export const asignarStrikePrestamo = (req, res) => {
   try {
     const { id } = req.params;
     const prestamo = obtenerPrestamoPorId(parseInt(id));
-    
-    if (!prestamo) return res.status(404).json({ exito: false, mensaje: `Préstamo no encontrado.` });
-    
-    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-    const fechaDevolucion = new Date(prestamo.fecha_devolucion); fechaDevolucion.setHours(0, 0, 0, 0);
-    
-    if (hoy <= fechaDevolucion) return res.status(400).json({ exito: false, mensaje: 'Préstamo no vencido.' });
-    if (prestamo.estado !== 'PENDIENTE') return res.status(400).json({ exito: false, mensaje: 'Debe estar PENDIENTE.' });
-    
+
+    if (!prestamo)
+      return res
+        .status(404)
+        .json({ exito: false, mensaje: `Préstamo no encontrado.` });
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaDevolucion = new Date(prestamo.fecha_devolucion);
+    fechaDevolucion.setHours(0, 0, 0, 0);
+
+    if (hoy <= fechaDevolucion)
+      return res
+        .status(400)
+        .json({ exito: false, mensaje: "Préstamo no vencido." });
+    if (prestamo.estado !== "PENDIENTE")
+      return res
+        .status(400)
+        .json({ exito: false, mensaje: "Debe estar PENDIENTE." });
+
     const usuario = obtenerUsuarioPorId(prestamo.id_usuario);
     asignarStrike(prestamo.id_usuario);
     prestamo.fecha_sancion = new Date();
-    
-    return res.status(200).json({ exito: true, mensaje: `Strike asignado a ${usuario.nombre}.` });
+
+    return res
+      .status(200)
+      .json({ exito: true, mensaje: `Strike asignado a ${usuario.nombre}.` });
   } catch (error) {
     return res.status(500).json({ exito: false, error: error.message });
   }
@@ -359,32 +416,46 @@ export const asignarStrikePrestamo = (req, res) => {
  * NUEVA FUNCIÓN: Elimina un préstamo y restaura el stock si no había sido devuelto
  */
 export const eliminarPrestamo = (req, res) => {
-    try {
-        const { id } = req.params;
-        const index = prestamosDB.findIndex(p => p.id_prestamo === parseInt(id) || p.id === parseInt(id));
+  try {
+    const { id } = req.params;
+    const index = prestamosDB.findIndex(
+      (p) => p.id_prestamo === parseInt(id) || p.id === parseInt(id),
+    );
 
-        if (index === -1) {
-            return res.status(404).json({ exito: false, mensaje: "Préstamo no encontrado" });
-        }
-
-        const prestamo = prestamosDB[index];
-        
-        // ⭐ RESTAURAR STOCK MATEMÁTICAMENTE SI ESTABA PENDIENTE ⭐
-        if (prestamo.estado === "PENDIENTE") {
-            const equipo = equiposDB.find(e => e.id === prestamo.id_equipo);
-            if (equipo) {
-                equipo.stock_total += 1;
-            }
-        }
-
-        // Eliminar del array
-        prestamosDB.splice(index, 1);
-        
-        return res.status(200).json({ exito: true, mensaje: "Préstamo eliminado y stock restaurado si aplicaba." });
-        
-    } catch (error) {
-        return res.status(500).json({ exito: false, mensaje: "Error interno al eliminar", error: error.message });
+    if (index === -1) {
+      return res
+        .status(404)
+        .json({ exito: false, mensaje: "Préstamo no encontrado" });
     }
+
+    const prestamo = prestamosDB[index];
+
+    // ⭐ RESTAURAR STOCK MATEMÁTICAMENTE SI ESTABA PENDIENTE ⭐
+    if (prestamo.estado === "PENDIENTE") {
+      const equipo = equiposDB.find((e) => e.id === prestamo.id_equipo);
+      if (equipo) {
+        equipo.stock_total += 1;
+      }
+    }
+
+    // Eliminar del array
+    prestamosDB.splice(index, 1);
+
+    return res
+      .status(200)
+      .json({
+        exito: true,
+        mensaje: "Préstamo eliminado y stock restaurado si aplicaba.",
+      });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({
+        exito: false,
+        mensaje: "Error interno al eliminar",
+        error: error.message,
+      });
+  }
 };
 
 // --- EN TU BACKEND (ej. reservasController.js o prestamosController.js) ---
@@ -419,13 +490,16 @@ const aprobarReserva = async (req, res) => {
     fechaDevolucion.setDate(fechaDevolucion.getDate() + 15);
 
     // Cambiamos el estado a 'PENDIENTE' (o 'EN_PRESTAMO') y asignamos las fechas reales
-    await db.query(`
+    await db.query(
+      `
       UPDATE prestamos 
       SET estado = 'PENDIENTE', 
           fecha_prestamo = CURRENT_DATE, 
           fecha_devolucion = $1 
       WHERE id = $2
-    `, [fechaDevolucion, id_reserva]);
+    `,
+      [fechaDevolucion, id_reserva],
+    );
 
     res.status(200).json({ mensaje: "¡Equipo entregado y préstamo activado!" });
   } catch (error) {
@@ -439,24 +513,31 @@ const cancelarReserva = async (req, res) => {
   const { id_reserva } = req.params;
 
   try {
-    await db.query('BEGIN');
+    await db.query("BEGIN");
 
     // Obtener el equipo asociado a esta reserva
-    const reserva = await db.query('SELECT id_equipo FROM prestamos WHERE id = $1', [id_reserva]);
+    const reserva = await db.query(
+      "SELECT id_equipo FROM prestamos WHERE id = $1",
+      [id_reserva],
+    );
     if (reserva.rows.length === 0) throw new Error("Reserva no encontrada");
-    
+
     const id_equipo = reserva.rows[0].id_equipo;
 
     // Eliminar la reserva (o cambiarla a estado 'CANCELADO')
-    await db.query("UPDATE prestamos SET estado = 'CANCELADO' WHERE id = $1", [id_reserva]);
+    await db.query("UPDATE prestamos SET estado = 'CANCELADO' WHERE id = $1", [
+      id_reserva,
+    ]);
 
     // Devolver el equipo a estado 'DISPONIBLE' (o sumar 1 al stock)
-    await db.query("UPDATE equipos SET estado = 'DISPONIBLE' WHERE id = $1", [id_equipo]);
+    await db.query("UPDATE equipos SET estado = 'DISPONIBLE' WHERE id = $1", [
+      id_equipo,
+    ]);
 
-    await db.query('COMMIT');
+    await db.query("COMMIT");
     res.status(200).json({ mensaje: "Reserva cancelada, equipo liberado." });
   } catch (error) {
-    await db.query('ROLLBACK');
+    await db.query("ROLLBACK");
     console.error("Error al cancelar reserva:", error);
     res.status(500).json({ mensaje: "Error interno del servidor" });
   }

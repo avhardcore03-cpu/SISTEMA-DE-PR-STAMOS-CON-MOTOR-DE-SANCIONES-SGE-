@@ -3,7 +3,12 @@
  * Maneja la obtención de usuarios sancionados y el perdón de sanciones
  */
 
-import { usuariosDB, obtenerUsuarioPorId, obtenerEquipoRetenidoPorUsuario, obtenerDashboardSanciones } from '../database/db.js';
+import {
+  usuariosDB,
+  obtenerUsuarioPorId,
+  obtenerEquipoRetenidoPorUsuario,
+  obtenerDashboardSanciones,
+} from "../database/db.js";
 
 /**
  * GET /api/sanciones
@@ -13,12 +18,12 @@ import { usuariosDB, obtenerUsuarioPorId, obtenerEquipoRetenidoPorUsuario, obten
 export const obtenerSancionados = (req, res) => {
   try {
     // Filtrar usuarios sancionados (strikes > 0 o suspendidos)
-    const usuariosSancionados = usuariosDB.filter(usuario => 
-      usuario.strikes > 0 || usuario.estado === 'SUSPENDIDO'
+    const usuariosSancionados = usuariosDB.filter(
+      (usuario) => usuario.strikes > 0 || usuario.estado === "SUSPENDIDO",
     );
 
     // ⭐ MAPEAR CON INFORMACIÓN DE EQUIPO RETENIDO
-    const usuariosConEquipo = usuariosSancionados.map(user => ({
+    const usuariosConEquipo = usuariosSancionados.map((user) => ({
       id: user.id,
       nombre: user.nombre,
       email: user.email,
@@ -26,20 +31,20 @@ export const obtenerSancionados = (req, res) => {
       strikes: user.strikes,
       estado: user.estado,
       fechaCreacion: user.fechaCreacion,
-      equipoRetenido: obtenerEquipoRetenidoPorUsuario(user.id) || "N/A"
+      equipoRetenido: obtenerEquipoRetenidoPorUsuario(user.id) || "N/A",
     }));
 
     return res.status(200).json({
       exito: true,
       cantidad: usuariosConEquipo.length,
-      datos: usuariosConEquipo
+      datos: usuariosConEquipo,
     });
   } catch (error) {
-    console.error('Error en obtenerSancionados:', error);
+    console.error("Error en obtenerSancionados:", error);
     return res.status(500).json({
       exito: false,
-      mensaje: 'Error al obtener usuarios sancionados',
-      error: error.message
+      mensaje: "Error al obtener usuarios sancionados",
+      error: error.message,
     });
   }
 };
@@ -56,7 +61,7 @@ export const perdonarSancion = (req, res) => {
     if (!id) {
       return res.status(400).json({
         exito: false,
-        mensaje: 'ID de usuario requerido.'
+        mensaje: "ID de usuario requerido.",
       });
     }
 
@@ -65,22 +70,22 @@ export const perdonarSancion = (req, res) => {
     if (!usuario) {
       return res.status(404).json({
         exito: false,
-        mensaje: `Usuario con ID ${id} no encontrado.`
+        mensaje: `Usuario con ID ${id} no encontrado.`,
       });
     }
 
     // Validación: usuario debe estar sancionado
-    if (usuario.strikes === 0 && usuario.estado !== 'SUSPENDIDO') {
+    if (usuario.strikes === 0 && usuario.estado !== "SUSPENDIDO") {
       return res.status(400).json({
         exito: false,
-        mensaje: 'Este usuario no tiene sanciones para perdonar.'
+        mensaje: "Este usuario no tiene sanciones para perdonar.",
       });
     }
 
     // Resetear sanciones
     const strikesAnteriores = usuario.strikes;
     usuario.strikes = 0;
-    usuario.estado = 'ACTIVO';
+    usuario.estado = "ACTIVO";
 
     return res.status(200).json({
       exito: true,
@@ -91,15 +96,15 @@ export const perdonarSancion = (req, res) => {
         email: usuario.email,
         strikes: usuario.strikes,
         estado: usuario.estado,
-        strikesAnteriores: strikesAnteriores
-      }
+        strikesAnteriores: strikesAnteriores,
+      },
     });
   } catch (error) {
-    console.error('Error en perdonarSancion:', error);
+    console.error("Error en perdonarSancion:", error);
     return res.status(500).json({
       exito: false,
-      mensaje: 'Error al perdonar la sanción',
-      error: error.message
+      mensaje: "Error al perdonar la sanción",
+      error: error.message,
     });
   }
 };
@@ -112,18 +117,18 @@ export const perdonarSancion = (req, res) => {
 export const obtenerDashboard = (req, res) => {
   try {
     const dashboard = obtenerDashboardSanciones();
-    
+
     return res.status(200).json({
       exito: true,
-      mensaje: 'Dashboard de sanciones obtenido exitosamente.',
-      datos: dashboard
+      mensaje: "Dashboard de sanciones obtenido exitosamente.",
+      datos: dashboard,
     });
   } catch (error) {
-    console.error('Error en obtenerDashboard:', error);
+    console.error("Error en obtenerDashboard:", error);
     return res.status(500).json({
       exito: false,
-      mensaje: 'Error al obtener el dashboard de sanciones',
-      error: error.message
+      mensaje: "Error al obtener el dashboard de sanciones",
+      error: error.message,
     });
   }
 };

@@ -6,7 +6,7 @@
 
 /**
  * Array de usuarios - Base de datos en memoria
- * 
+ *
  * Credenciales de prueba:
  * ADMIN: email = admin@example.com | password = admin
  * ADMIN: email = admin2@example.com | password = admin
@@ -29,7 +29,7 @@ export const usuariosDB = [
     rol: "ADMIN",
     estado: "ACTIVO",
     strikes: 0,
-    fechaCreacion: new Date("2024-01-01")
+    fechaCreacion: new Date("2024-01-01"),
   },
   //  ADMIN 2
   {
@@ -43,7 +43,7 @@ export const usuariosDB = [
     rol: "ADMIN",
     estado: "ACTIVO",
     strikes: 0,
-    fechaCreacion: new Date("2024-01-05")
+    fechaCreacion: new Date("2024-01-05"),
   },
   //  ESTUDIANTE 1: ACTIVO - 0 Strikes
   {
@@ -57,7 +57,7 @@ export const usuariosDB = [
     rol: "ESTUDIANTE",
     estado: "ACTIVO",
     strikes: 0,
-    fechaCreacion: new Date("2024-02-01")
+    fechaCreacion: new Date("2024-02-01"),
   },
   //  ESTUDIANTE 2: ACTIVO - 0 Strikes
   {
@@ -71,7 +71,7 @@ export const usuariosDB = [
     rol: "ESTUDIANTE",
     estado: "ACTIVO",
     strikes: 0,
-    fechaCreacion: new Date("2024-02-05")
+    fechaCreacion: new Date("2024-02-05"),
   },
   //  ESTUDIANTE 3: ACTIVO - 0 Strikes
   {
@@ -85,9 +85,9 @@ export const usuariosDB = [
     rol: "ESTUDIANTE",
     estado: "ACTIVO",
     strikes: 0,
-    fechaCreacion: new Date("2024-02-10")
+    fechaCreacion: new Date("2024-02-10"),
   },
-  //  ESTUDIANTE 4: SUSPENDIDO - 1 Strike (para testing de sanciones)
+  //  ESTUDIANTE 4: OBSERVACIÓN - 1 Strike (para testing de sanciones)
   {
     id: 6,
     nombre: "Carlos Ramírez",
@@ -97,11 +97,11 @@ export const usuariosDB = [
     // Hash bcrypt (cost 10) para "password123"
     password: "$2a$10$89X70VtgZp6M/pOCInS7reVnS6WAnWv9SHe9G.Zf8A97.Xf.0p39a",
     rol: "ESTUDIANTE",
-    estado: "SUSPENDIDO",
+    estado: "OBSERVACIÓN",
     strikes: 1,
-    fechaCreacion: new Date("2024-02-15")
+    fechaCreacion: new Date("2024-02-15"),
   },
-  //  ESTUDIANTE 5: SUSPENDIDO - 2 Strikes (para testing de sanciones)
+  //  ESTUDIANTE 5: ADVERTENCIA - 2 Strikes (para testing de sanciones)
   {
     id: 7,
     nombre: "Marta Sánchez",
@@ -111,10 +111,24 @@ export const usuariosDB = [
     // Hash bcrypt (cost 10) para "password123"
     password: "$2a$10$89X70VtgZp6M/pOCInS7reVnS6WAnWv9SHe9G.Zf8A97.Xf.0p39a",
     rol: "ESTUDIANTE",
-    estado: "SUSPENDIDO",
+    estado: "ADVERTENCIA",
     strikes: 2,
-    fechaCreacion: new Date("2024-02-20")
-  }
+    fechaCreacion: new Date("2024-02-20"),
+  },
+  //  ESTUDIANTE 6: SUSPENDIDO - 3 Strikes (para testing de sanciones)
+  {
+    id: 8,
+    nombre: "Juan Pérez",
+    email: "juan.perez@example.com",
+    tipo_documento: "CC",
+    identificacion: "1006789012",
+    // Hash bcrypt (cost 10) para "password123"
+    password: "$2a$10$89X70VtgZp6M/pOCInS7reVnS6WAnWv9SHe9G.Zf8A97.Xf.0p39a",
+    rol: "ESTUDIANTE",
+    estado: "SUSPENDIDO",
+    strikes: 3,
+    fechaCreacion: new Date("2024-02-25"),
+  },
 ];
 
 // Array que simula la tabla de préstamos en la base de datos
@@ -135,7 +149,7 @@ export const prestamosDB = [
     fecha_entrega_real: null,
     estado: "PENDIENTE",
     fecha_sancion: null,
-    dias_retraso: 5
+    dias_retraso: 5,
   },
   // PRÉSTAMO PENDIENTE - Estudiante 2 SUSPENDIDO (Marta Sánchez, ID 4)
   {
@@ -152,7 +166,7 @@ export const prestamosDB = [
     fecha_entrega_real: null,
     estado: "PENDIENTE",
     fecha_sancion: null,
-    dias_retraso: 7
+    dias_retraso: 7,
   },
   //  PRÉSTAMO DEVUELTO - Estudiante 3 ACTIVO (Luis González, ID 5)
   {
@@ -169,7 +183,7 @@ export const prestamosDB = [
     fecha_entrega_real: new Date("2024-03-04"),
     estado: "DEVUELTO",
     fecha_sancion: null,
-    dias_retraso: 0
+    dias_retraso: 0,
   },
   //  PRÉSTAMO DEVUELTO - Estudiante 4 ACTIVO (Iris Martínez, ID 6)
   {
@@ -186,7 +200,7 @@ export const prestamosDB = [
     fecha_entrega_real: new Date("2024-02-24"),
     estado: "DEVUELTO",
     fecha_sancion: null,
-    dias_retraso: 0
+    dias_retraso: 0,
   },
   //  PRÉSTAMO DEVUELTO - Estudiante 5 ACTIVO (Andrea López, ID 7)
   {
@@ -203,20 +217,20 @@ export const prestamosDB = [
     fecha_entrega_real: new Date("2024-03-19"),
     estado: "DEVUELTO",
     fecha_sancion: null,
-    dias_retraso: 0
-  }
+    dias_retraso: 0,
+  },
 ];
 
 export const obtenerUsuarioPorEmail = (email) => {
-  return usuariosDB.find(usuario => usuario.email === email);
+  return usuariosDB.find((usuario) => usuario.email === email);
 };
 
 export const obtenerUsuarioPorId = (id) => {
-  return usuariosDB.find(usuario => usuario.id === id);
+  return usuariosDB.find((usuario) => usuario.id === id);
 };
 
 export const obtenerPrestamoPorId = (id_prestamo) => {
-  return prestamosDB.find(prestamo => prestamo.id_prestamo === id_prestamo);
+  return prestamosDB.find((prestamo) => prestamo.id_prestamo === id_prestamo);
 };
 
 export const actualizarEstadoPorStrikes = (usuario) => {
@@ -227,96 +241,96 @@ export const actualizarEstadoPorStrikes = (usuario) => {
 
 // 1. Creamos la lista de equipos (el inventario) - 10 EQUIPOS DIFERENTES
 export const equiposDB = [
-  { 
-    id: 1, 
-    nombre: "Laptop Lenovo ThinkPad", 
-    categoria: "Computadoras", 
-    estado: "Prestado", 
+  {
+    id: 1,
+    nombre: "Laptop Lenovo ThinkPad",
+    categoria: "Computadoras",
+    estado: "Prestado",
     stock_total: 2,
-    icono: "💻", 
-    descripcion: "Laptop de alto rendimiento para desarrollo de software" 
+    icono: "💻",
+    descripcion: "Laptop de alto rendimiento para desarrollo de software",
   },
-  { 
-    id: 2, 
-    nombre: "Videoproyector BenQ", 
-    categoria: "Audio/Video", 
-    estado: "Prestado", 
+  {
+    id: 2,
+    nombre: "Videoproyector BenQ",
+    categoria: "Audio/Video",
+    estado: "Prestado",
     stock_total: 1,
-    icono: "🎬", 
-    descripcion: "Proyector Full HD con 3000 lúmenes de brillo" 
+    icono: "🎬",
+    descripcion: "Proyector Full HD con 3000 lúmenes de brillo",
   },
-  { 
-    id: 3, 
-    nombre: "Tablet Samsung Galaxy Tab", 
-    categoria: "Tablets", 
-    estado: "Prestado", 
+  {
+    id: 3,
+    nombre: "Tablet Samsung Galaxy Tab",
+    categoria: "Tablets",
+    estado: "Prestado",
     stock_total: 2,
-    icono: "📱", 
-    descripcion: "Tablet de 10.1 pulgadas con S Pen incluido" 
+    icono: "📱",
+    descripcion: "Tablet de 10.1 pulgadas con S Pen incluido",
   },
-  { 
-    id: 4, 
-    nombre: "Cámara Canon EOS", 
-    categoria: "Fotografía", 
-    estado: "Disponible", 
+  {
+    id: 4,
+    nombre: "Cámara Canon EOS",
+    categoria: "Fotografía",
+    estado: "Disponible",
     stock_total: 1,
-    icono: "📷", 
-    descripcion: "Cámara DSLR profesional con lentes 18-55mm y 75-300mm" 
+    icono: "📷",
+    descripcion: "Cámara DSLR profesional con lentes 18-55mm y 75-300mm",
   },
-  { 
-    id: 5, 
-    nombre: "Cable HDMI Premium", 
-    categoria: "Accesorios", 
-    estado: "Prestado", 
+  {
+    id: 5,
+    nombre: "Cable HDMI Premium",
+    categoria: "Accesorios",
+    estado: "Prestado",
     stock_total: 5,
-    icono: "🔌", 
-    descripcion: "Cable HDMI 2.0 de 3 metros con soporte 4K" 
+    icono: "🔌",
+    descripcion: "Cable HDMI 2.0 de 3 metros con soporte 4K",
   },
-  { 
-    id: 6, 
-    nombre: "Monitor Dell UltraSharp 27", 
-    categoria: "Audio/Video", 
-    estado: "Disponible", 
+  {
+    id: 6,
+    nombre: "Monitor Dell UltraSharp 27",
+    categoria: "Audio/Video",
+    estado: "Disponible",
     stock_total: 2,
-    icono: "🖥️", 
-    descripcion: "Monitor 4K con panel IPS y calibración de color" 
+    icono: "🖥️",
+    descripcion: "Monitor 4K con panel IPS y calibración de color",
   },
-  { 
-    id: 7, 
-    nombre: "Mouse Logitech MX Master", 
-    categoria: "Computadoras", 
-    estado: "Disponible", 
+  {
+    id: 7,
+    nombre: "Mouse Logitech MX Master",
+    categoria: "Computadoras",
+    estado: "Disponible",
     stock_total: 4,
-    icono: "🖱️", 
-    descripcion: "Mouse profesional inalámbrico con batería recargable" 
+    icono: "🖱️",
+    descripcion: "Mouse profesional inalámbrico con batería recargable",
   },
-  { 
-    id: 8, 
-    nombre: "Micrófono Condenser Blue", 
-    categoria: "Audio/Video", 
-    estado: "Disponible", 
+  {
+    id: 8,
+    nombre: "Micrófono Condenser Blue",
+    categoria: "Audio/Video",
+    estado: "Disponible",
     stock_total: 1,
-    icono: "🎤", 
-    descripcion: "Micrófono de condensador USB para grabación profesional" 
+    icono: "🎤",
+    descripcion: "Micrófono de condensador USB para grabación profesional",
   },
-  { 
-    id: 9, 
-    nombre: "iPad Pro 12.9", 
-    categoria: "Tablets", 
-    estado: "Disponible", 
+  {
+    id: 9,
+    nombre: "iPad Pro 12.9",
+    categoria: "Tablets",
+    estado: "Disponible",
     stock_total: 1,
-    icono: "📲", 
-    descripcion: "Tablet de 12.9 pulgadas con Apple Pencil y Magic Keyboard" 
+    icono: "📲",
+    descripcion: "Tablet de 12.9 pulgadas con Apple Pencil y Magic Keyboard",
   },
-  { 
-    id: 10, 
-    nombre: "Dron DJI Mini 3", 
-    categoria: "Fotografía", 
-    estado: "Disponible", 
+  {
+    id: 10,
+    nombre: "Dron DJI Mini 3",
+    categoria: "Fotografía",
+    estado: "Disponible",
     stock_total: 1,
-    icono: "🚁", 
-    descripcion: "Dron de 249g con cámara 12MP y batería de 34 min de vuelo" 
-  }
+    icono: "🚁",
+    descripcion: "Dron de 249g con cámara 12MP y batería de 34 min de vuelo",
+  },
 ];
 
 // 2. Creamos la función para que el controlador pueda sacar estos datos
@@ -327,31 +341,35 @@ export const obtenerTodosEquipos = () => {
 // FUNCIONES PARA SOLICITUD DE PRÉSTAMOS
 export const crearSolicitudPrestamo = (id_usuario, id_equipo) => {
   // Generar nuevo ID para préstamo
-  const maxId = prestamosDB.length > 0 ? Math.max(...prestamosDB.map(p => p.id_prestamo)) : 100;
+  const maxId =
+    prestamosDB.length > 0
+      ? Math.max(...prestamosDB.map((p) => p.id_prestamo))
+      : 100;
   const nuevoPrestamo = {
     id_prestamo: maxId + 1,
     id_usuario: id_usuario,
     id_equipo: id_equipo,
-    descripcion_equipo: equiposDB.find(e => e.id === id_equipo)?.nombre || "Equipo",
+    descripcion_equipo:
+      equiposDB.find((e) => e.id === id_equipo)?.nombre || "Equipo",
     fecha_prestamo: new Date(),
     fecha_esperada: null,
     fecha_entrega_real: null,
-    estado: "PENDIENTE"
+    estado: "PENDIENTE",
   };
-  
+
   prestamosDB.push(nuevoPrestamo);
-  
+
   // Cambiar estado del equipo a "Prestado"
-  const equipo = equiposDB.find(e => e.id === id_equipo);
+  const equipo = equiposDB.find((e) => e.id === id_equipo);
   if (equipo) {
     equipo.estado = "Prestado";
   }
-  
+
   return nuevoPrestamo;
 };
 
 export const obtenerPrestamosPorUsuario = (id_usuario) => {
-  return prestamosDB.filter(p => p.id_usuario === id_usuario);
+  return prestamosDB.filter((p) => p.id_usuario === id_usuario);
 };
 
 export const obtenerTodosPrestamos = () => {
@@ -363,8 +381,8 @@ export const obtenerTodosPrestamos = () => {
  * Se usa en el módulo de sanciones
  */
 export const obtenerEquipoRetenidoPorUsuario = (id_usuario) => {
-  const prestamo = prestamosDB.find(p => 
-    p.id_usuario === id_usuario && p.estado === 'PENDIENTE'
+  const prestamo = prestamosDB.find(
+    (p) => p.id_usuario === id_usuario && p.estado === "PENDIENTE",
   );
   return prestamo ? prestamo.nombre_equipo : null;
 };
@@ -378,12 +396,12 @@ export const obtenerEquipoRetenidoPorUsuario = (id_usuario) => {
 export const asignarStrike = (id_usuario) => {
   const usuario = obtenerUsuarioPorId(id_usuario);
   if (!usuario) return null;
-  
+
   usuario.strikes += 1;
   if (usuario.strikes >= 3) {
-    usuario.estado = 'SUSPENDIDO';
+    usuario.estado = "SUSPENDIDO";
   }
-  
+
   return usuario;
 };
 
@@ -396,7 +414,7 @@ export const asignarStrike = (id_usuario) => {
 export const calcularFechaConDiasHabiles = (fechaInicio, diasHabiles = 15) => {
   const fecha = new Date(fechaInicio);
   let diasContados = 0;
-  
+
   while (diasContados < diasHabiles) {
     fecha.setDate(fecha.getDate() + 1);
     // 0 = domingo, 6 = sábado
@@ -405,7 +423,7 @@ export const calcularFechaConDiasHabiles = (fechaInicio, diasHabiles = 15) => {
       diasContados++;
     }
   }
-  
+
   return fecha;
 };
 
@@ -416,10 +434,9 @@ export const calcularFechaConDiasHabiles = (fechaInicio, diasHabiles = 15) => {
 export const obtenerPrestamosVencidos = () => {
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  
-  return prestamosDB.filter(p => 
-    p.estado === 'PENDIENTE' && 
-    new Date(p.fecha_devolucion) < hoy
+
+  return prestamosDB.filter(
+    (p) => p.estado === "PENDIENTE" && new Date(p.fecha_devolucion) < hoy,
   );
 };
 
@@ -429,16 +446,16 @@ export const obtenerPrestamosVencidos = () => {
  */
 export const obtenerDashboardSanciones = () => {
   // 1. Obtener todos los usuarios con strikes > 0 o suspendidos
-  const usuariosSancionados = usuariosDB.filter(u => 
-    u.strikes > 0 || u.estado === 'SUSPENDIDO'
+  const usuariosSancionados = usuariosDB.filter(
+    (u) => u.strikes > 0 || u.estado === "SUSPENDIDO",
   );
-  
+
   // 2. Cruzar con prestamosDB para obtener equipo retenido y fecha de sanción
-  const sancionadosDetail = usuariosSancionados.map(user => {
-    const prestamo = prestamosDB.find(p => 
-      p.id_usuario === user.id && p.estado === 'PENDIENTE'
+  const sancionadosDetail = usuariosSancionados.map((user) => {
+    const prestamo = prestamosDB.find(
+      (p) => p.id_usuario === user.id && p.estado === "PENDIENTE",
     );
-    
+
     return {
       id: user.id,
       nombre: user.nombre,
@@ -448,14 +465,17 @@ export const obtenerDashboardSanciones = () => {
       strikes: user.strikes,
       estado: user.estado,
       equipo_retenido: prestamo ? prestamo.nombre_equipo : "N/A",
-      fecha_sancion: prestamo ? prestamo.fecha_sancion || prestamo.fecha_prestamo : null
+      fecha_sancion: prestamo
+        ? prestamo.fecha_sancion || prestamo.fecha_prestamo
+        : null,
     };
   });
-  
+
   return {
     usuarios_sancionados: usuariosSancionados.length,
-    suspendidos: usuariosSancionados.filter(u => u.estado === 'SUSPENDIDO').length,
+    suspendidos: usuariosSancionados.filter((u) => u.estado === "SUSPENDIDO")
+      .length,
     total_strikes: usuariosSancionados.reduce((sum, u) => sum + u.strikes, 0),
-    sancionados_detail: sancionadosDetail
+    sancionados_detail: sancionadosDetail,
   };
 };
