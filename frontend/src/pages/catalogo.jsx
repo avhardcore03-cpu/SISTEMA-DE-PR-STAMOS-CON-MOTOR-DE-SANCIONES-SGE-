@@ -278,40 +278,6 @@ const Catalogo = ({ esEstudiante = false }) => {
                     : "No disponible actualmente"}
                 </p>
               </div>
-
-              {/* Botón Solicitar solo para estudiantes */}
-              {esEstudiante && (
-                <button
-                  onClick={() => handleSolicitar(equipo.id, equipo.nombre)}
-                  disabled={
-                    solicitudEnProceso[equipo.id] ||
-                    equipo.estado !== "Disponible" ||
-                    estadoUsuario === "SUSPENDIDO" //  BLOQUEAR SI SUSPENDIDO
-                  }
-                  className={`w-full py-2 px-4 rounded-lg text-sm font-bold transition-all ${
-                    estadoUsuario === "SUSPENDIDO"
-                      ? "bg-red-100 text-red-500 cursor-not-allowed border border-red-300"
-                      : equipo.estado !== "Disponible"
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : solicitudEnProceso[equipo.id]
-                          ? "bg-blue-400 text-white animate-pulse"
-                          : "bg-[#008c72] hover:bg-[#006b56] text-white"
-                  }`}
-                  title={
-                    estadoUsuario === "SUSPENDIDO"
-                      ? "Tu cuenta está suspendida"
-                      : ""
-                  }
-                >
-                  {estadoUsuario === "SUSPENDIDO"
-                    ? "Cuenta Suspendida"
-                    : solicitudEnProceso[equipo.id]
-                      ? "Solicitando..."
-                      : equipo.estado === "Disponible"
-                        ? "Solicitar"
-                        : "No disponible"}
-                </button>
-              )}
             </div>
           ))
         ) : (

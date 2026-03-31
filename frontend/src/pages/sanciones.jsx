@@ -7,12 +7,26 @@ export default function Sanciones() {
   const [actualizando, setActualizando] = useState(false); // 🔄 Estado para el updater
   const [mensaje, setMensaje] = useState("");
   const [trigger, setTrigger] = useState(0);
+  const [refreshTimestamp, setRefreshTimestamp] = useState(0); // Detecta cambios desde Prestamos
 
   const [dashboard, setDashboard] = useState({
     usuarios_sancionados: 0,
     suspendidos: 0,
     total_strikes: 0,
   });
+
+  // ⭐ LISTENER: Detecta cambios en localStorage desde Prestamos
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newTimestamp = localStorage.getItem("sancionesRefresh");
+      if (newTimestamp) {
+        setRefreshTimestamp(parseInt(newTimestamp));
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   // ⭐ CARGAR DATOS
   useEffect(() => {
@@ -36,7 +50,7 @@ export default function Sanciones() {
       }
     };
     cargarDatos();
-  }, [trigger]);
+  }, [trigger, refreshTimestamp]); // Se ejecuta cuando cambia refreshTimestamp
 
   // 🚀 BOTÓN UPDATER: Revisa préstamos vencidos y aplica sanciones
   const handleActualizarSanciones = async () => {

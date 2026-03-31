@@ -28,6 +28,35 @@ const Prestamos = ({ userStatus }) => {
     }
   };
 
+  const manejarDevolver = async (id, fechaPactada) => {
+    if (
+      !window.confirm(
+        "¿Confirmas la devolución? El sistema verificará si hay retraso.",
+      )
+    )
+      return;
+
+    const hoy = new Date().toISOString().split("T")[0];
+
+    try {
+      const res = await fetch(`${API_PRE}/devolver/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fecha_real_entrega: hoy }),
+      });
+
+      if (res.ok) {
+        const resultado = await res.json();
+        alert(resultado.mensaje);
+        // Notificar a Sanciones que recargue datos
+        localStorage.setItem("sancionesRefresh", Date.now().toString());
+        cargarTodo();
+      }
+    } catch (e) {
+      alert("Error al procesar la devolución");
+    }
+  };
+
   const manejarPrestar = async () => {
     // 1. BLOQUEO: Si el usuario está suspendido, no dejamos ni intentar el fetch
     if (estaSuspendido) {
@@ -72,34 +101,6 @@ const Prestamos = ({ userStatus }) => {
       }
     } catch (e) {
       alert("Error de conexión con el servidor");
-    }
-  };
-
-  const manejarDevolver = async (id) => {
-    if (
-      !window.confirm(
-        "¿Confirmas la devolución? El sistema verificará si hay retraso.",
-      )
-    )
-      return;
-
-    const hoy = new Date().toISOString().split("T")[0];
-
-    try {
-      // Usamos la nueva ruta de devolución que creamos en el backend
-      const res = await fetch(`${API_PRE}/devolver/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fecha_real_entrega: hoy }), // Enviamos la fecha de hoy para calcular strike
-      });
-
-      if (res.ok) {
-        const resultado = await res.json();
-        alert(resultado.mensaje); // "Devolución a tiempo" o "Strike aplicado"
-        cargarTodo();
-      }
-    } catch (e) {
-      alert("Error al procesar la devolución");
     }
   };
 
@@ -160,7 +161,7 @@ const Prestamos = ({ userStatus }) => {
 
         {/* NUEVO CAMPO: FECHA PACTADA */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2 font-bold text-emerald-600">
+          <label className="block text-sm font-bold text-emerald-600 mb-2">
             Fecha Devolución
           </label>
           <input
@@ -204,8 +205,8 @@ const Prestamos = ({ userStatus }) => {
                 Cant: {p.cantidad}
               </span>
               <button
-                onClick={() => manejarDevolver(p.id)}
-                className="text-red-500 hover:text-red-700 font-bold text-sm flex items-center gap-1"
+                onClick={() => manejarDevolver(p.id, p.fecha_pactada)}
+                className="text-red-500 hover:text-red-700 font-bold text-sm"
               >
                 Registrar Devolución
               </button>

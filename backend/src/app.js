@@ -53,7 +53,7 @@ let misPrestamos = [
     usuario: "CarlosSuspendido",
     cantidad: 1,
     fecha_salida: "2026-03-10",
-    fecha_pactada: "2026-03-20",
+    fecha_pactada: "2026-03-15",
     estado: "Pendiente",
   },
   {
@@ -117,8 +117,8 @@ let usuariosDB = [
     email: "carlos.ramirez@example.com",
     password: "password123",
     rol: "ESTUDIANTE",
-    strikes: 3,
-    estado: "SUSPENDIDO",
+    strikes: 0,
+    estado: "ACTIVO",
   },
   {
     id: 4,
@@ -126,8 +126,8 @@ let usuariosDB = [
     email: "marta.sanchez@example.com",
     password: "password123",
     rol: "ESTUDIANTE",
-    strikes: 3,
-    estado: "SUSPENDIDO",
+    strikes: 1,
+    estado: "OBSERVACIÓN",
   },
   {
     id: 5,
@@ -135,8 +135,8 @@ let usuariosDB = [
     email: "juan.perez@example.com",
     password: "password123",
     rol: "ESTUDIANTE",
-    strikes: 4,
-    estado: "SUSPENDIDO",
+    strikes: 2,
+    estado: "ADVERTENCIA",
   },
 ];
 
@@ -376,15 +376,21 @@ app.post("/api/prestamos/devolver/:id", (req, res) => {
     let mensaje = "Devolución a tiempo.";
 
     if (fechaReal > fechaEsperada) {
-      const usuarioSancionado = obtenerUsuarioDemoPrestamo();
-      usuarioSancionado.strikes += 1;
-      usuarioSancionado.estado = calcularEstadoPorStrikes(
-        usuarioSancionado.strikes,
+      // Buscar al usuario específico del préstamo
+      const usuarioSancionado = usuariosDB.find(
+        (u) => u.id === prestamo.id_usuario,
       );
-      mensaje = `⚠️ RETRASO: Strike #${usuarioSancionado.strikes} aplicado.`;
 
-      if (usuarioSancionado.strikes >= 3) {
-        mensaje += " Usuario SUSPENDIDO automáticamente.";
+      if (usuarioSancionado) {
+        usuarioSancionado.strikes += 1;
+        usuarioSancionado.estado = calcularEstadoPorStrikes(
+          usuarioSancionado.strikes,
+        );
+        mensaje = `⚠️ RETRASO: Strike #${usuarioSancionado.strikes} aplicado a ${usuarioSancionado.username}.`;
+
+        if (usuarioSancionado.strikes >= 3) {
+          mensaje += " Usuario SUSPENDIDO automáticamente.";
+        }
       }
     }
 
